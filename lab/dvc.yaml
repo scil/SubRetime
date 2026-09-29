@@ -1,9 +1,12 @@
 # Development pipeline. Run DVC commands from this lab/ directory, which is
 # a self-contained DVC project (`dvc init --subdir`). `dvc repro` reruns only
-# the stages whose inputs, code or params changed; `dvc repro align@<film>`
-# runs one film. Outputs go to work/<film>/ and out/<film>/ (git-ignored,
-# cached by DVC per experiment), except the metrics JSON files, which are
-# committed.
+# the stages whose inputs, code or params changed, for the films in
+# selection.yaml (pick them with pick_films.py). Outputs go to work/<film>/
+# and out/<film>/ (git-ignored, cached by DVC per experiment), except the
+# metrics JSON files, which are committed.
+vars:
+  - selection.yaml
+
 stages:
   transcribe:
     foreach: ${films}

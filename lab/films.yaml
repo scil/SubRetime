@@ -1,0 +1,18 @@
+# All test films. Edit this file by hand; pick_films.py copies the films you
+# select into selection.yaml, and only those run in dvc.yaml.
+#
+# Film ids name one video exactly (title + year, or series + episode), so
+# ann-droid-s01e01 and ann-droid-s01e02 never collide. Subtitles live in
+# films/<film id>/; videos are too large for the repository and stay where
+# they are (absolute paths are fine). Paths are relative to this lab/
+# directory.
+dog-man-2025:
+  video: "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4"
+  # subtitle to retime, as downloaded
+  original: films/dog-man-2025/original.srt
+  # reference timeline for evaluate_timing.py (disputes are counted against it)
+  baseline: films/dog-man-2025/ffsubsync.srt
+ann-droid-s01e01:
+  video: "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv"
+  original: films/ann-droid-s01e01/original.srt
+  baseline: films/ann-droid-s01e01/ffsubsync.srt

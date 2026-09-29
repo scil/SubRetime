@@ -297,8 +297,9 @@ These steps assume the normal [Installation](#installation) above is done
    be added later without a clash.
 
 5. Put each film's subtitles in `lab\films\<film id>\`. They are ordinary
-   files committed to git, so a clone brings them along and git keeps their
-   history.
+   files, not ignored by git; once committed, a clone brings them along and
+   git keeps their history. (The current test subtitles are not committed
+   yet, so a fresh clone has to add its own.)
 
    ```powershell
    New-Item -ItemType Directory -Force lab\films\dog-man-2025
@@ -309,16 +310,25 @@ These steps assume the normal [Installation](#installation) above is done
    Videos stay where they are: they are too large for the repository, and
    DVC still records their hash as a stage input.
 
-6. List the films in `lab\params.yaml` (paths there are relative to `lab/`).
-   Every entry under `films` gets its own stages: `transcribe@<film id>`,
-   `align@<film id>` and `evaluate@<film id>`.
+6. List every test film in `lab\films.yaml` (paths there are relative to
+   `lab/`); WhisperX settings shared by all films are in `lab\params.yaml`.
 
    | Key | Meaning |
    |---|---|
-   | `films.<id>.video` | the video (audio source for WhisperX and `--audio`); an absolute path is fine |
-   | `films.<id>.original` | the subtitle to retime, as downloaded, e.g. `films/dog-man-2025/original.srt` |
-   | `films.<id>.baseline` | reference timeline for `evaluate_timing.py`, e.g. `films/dog-man-2025/ffsubsync.srt` |
-   | `whisper.*` | WhisperX model, language, device, compute type (shared by all films) |
+   | `<id>.video` | the video (audio source for WhisperX and `--audio`); an absolute path is fine |
+   | `<id>.original` | the subtitle to retime, as downloaded, e.g. `films/dog-man-2025/original.srt` |
+   | `<id>.baseline` | reference timeline for `evaluate_timing.py`, e.g. `films/dog-man-2025/ffsubsync.srt` |
+   | `whisper.*` (params.yaml) | WhisperX model, language, device, compute type |
+
+   Then choose which of them run (see [Choosing films](#choosing-films)):
+
+   ```powershell
+   cd lab
+   python pick_films.py dog-man-2025
+   ```
+
+   Each selected film gets its own stages: `transcribe@<film id>`,
+   `align@<film id>` and `evaluate@<film id>`.
 
 7. Optional: reuse an existing WhisperX transcript instead of spending
    about 10 minutes per film on the transcribe stage. Copy its `.json` into
@@ -351,9 +361,12 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | File | Purpose |
 |---|---|
 | `dvc.yaml` | stages `transcribe`, `align`, `evaluate`, repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
-| `params.yaml` | the film list and WhisperX settings used by `dvc.yaml` |
+| `films.yaml` | every test film: video, subtitle, baseline (edited by hand) |
+| `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
+| `pick_films.py` | choose the films to run, in a window or on the command line |
+| `params.yaml` | WhisperX settings used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
-| `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
+| `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (not ignored by git; not committed yet) |
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
 | `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
 | `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
@@ -375,7 +388,8 @@ All commands run inside `lab/`.
 | Goal | Command |
 |---|---|
 | Run what changed | `dvc repro` |
-| Run one film only | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
+| Choose the films that run | `python pick_films.py` (window) or `python pick_films.py <film id> ...` |
+| Run one selected film only, once | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
 | Current metrics | `dvc metrics show` |
 | Metrics vs the last commit | `dvc metrics diff` |
 | Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
@@ -394,9 +408,30 @@ change does not need a commit first. In the VS Code **Experiments** table,
 tick the runs to compare; the **Plots** view then draws their per-step
 charts side by side.
 
-**Choosing a film in VS Code.** DVC has no "current film" switch: its
-templates cannot look up `films[<param>]`, so every listed film runs.
-Choose what you look at instead:
+#### Choosing films
+
+DVC runs every film in `lab/selection.yaml`. That file is generated from
+`films.yaml` by `pick_films.py`, because DVC's templates cannot pick entries
+by a parameter (`films[<param>]` is not supported). `dvc.yaml` loads it
+through `vars` and repeats its stages for each film with `foreach`.
+
+```powershell
+cd lab
+python pick_films.py                     # window: a checkbox per film
+python pick_films.py ann-droid-s01e01    # no window: write the selection
+```
+
+The window has two buttons. **Save selection** writes `selection.yaml`;
+**Save and run dvc repro** also runs the pipeline and shows its output.
+The window puts its own interpreter's folder first on `PATH`, so the stages'
+`python` and `whisperx` are the ones in `.venv`, even when the window was
+started without activating `.venv`.
+
+A film you leave out keeps its entries in `dvc.lock` and its outputs in
+DVC's cache. Selecting it again costs nothing if its inputs and the code are
+unchanged since its last run; otherwise it reruns on the next `dvc repro`.
+
+To choose what you *look at* in VS Code, among the films that ran:
 
 - **Plots**: run **DVC: Select Plots to Display** from the Command Palette
   (Ctrl+Shift+P). It lists one entry per `out/<film>/steps/<step>.csv`;
@@ -404,8 +439,6 @@ Choose what you look at instead:
 - **Experiments** table: the metric columns are grouped by file,
   `out/<film>/align.json` and `out/<film>/eval.json`. Run **DVC: Select
   Columns to Display in the Experiments Table** and untick the other films.
-- To run a single film, use `dvc repro align@<film id>` in the terminal, or
-  comment the other films out in `params.yaml` for a while.
 
 To add a step, write the function, call it in `align_subtitles()`, and add
 a `snapshot("<name>")` call after it. Later snapshot numbers shift by one,

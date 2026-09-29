@@ -1,24 +1,5 @@
-# Inputs of the DVC development pipeline (dvc.yaml). Every film listed under
-# `films` gets its own stages (transcribe@<film>, align@<film>,
-# evaluate@<film>); comment a film out to stop running it.
-#
-# Film ids name one video exactly (title + year, or series + episode), so
-# ann-droid-s01e01 and ann-droid-s01e02 never collide. Subtitles live in
-# films/<film id>/ and are committed to git; videos are too large for the
-# repository and stay where they are (absolute paths are fine).
-# Paths are relative to this lab/ directory.
-films:
-  dog-man-2025:
-    video: "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4"
-    # subtitle to retime, as downloaded
-    original: films/dog-man-2025/original.srt
-    # reference timeline for evaluate_timing.py (disputes are counted against it)
-    baseline: films/dog-man-2025/ffsubsync.srt
-  ann-droid-s01e01:
-    video: "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv"
-    original: films/ann-droid-s01e01/original.srt
-    baseline: films/ann-droid-s01e01/ffsubsync.srt
-
+# Settings of the DVC development pipeline (dvc.yaml). The films come from
+# selection.yaml (written by pick_films.py from films.yaml).
 whisper:
   model: large-v3
   language: en
