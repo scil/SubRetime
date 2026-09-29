@@ -373,6 +373,8 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
 | `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
 | `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
+| `out/<film>/changes.csv` | every line each step changed, before → after |
+| `cache/<film>/confidence.sqlite` | audio judge scores reused across runs (git-ignored, not a DVC output) |
 | `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
 | `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
 | `.dvc/`, `.dvcignore` | DVC's own configuration; `.dvc/cache` holds every run's outputs (git-ignored) |
@@ -380,10 +382,30 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 Outputs other than the metrics files are git-ignored. DVC keeps them in its
 cache, one copy per run.
 
-The snapshots come from development options of `align_srt.py`, which also
-work outside DVC: `--snapshots DIR` writes one CSV per step,
-`--metrics FILE` writes the status counts, and `--params FILE` overrides
-tuning constants (next section).
+These files come from development options of `align_srt.py`, which also
+work outside DVC:
+
+| Option | Writes |
+|---|---|
+| `--snapshots DIR` | one CSV per step: every line's state after that step |
+| `--changes FILE` | one CSV row per line a step changed: step, status and start/end before → after, how far it moved (`moved_s`), and the step's notes (e.g. `audio: whisper 0.62 vs prior 0.29`). The "before" of the first step is the original subtitle's time; a line without a time yet appears once a step gives it one |
+| `--metrics FILE` | the status counts |
+| `--params FILE` | nothing: reads tuning constants (next section) |
+| `--audio-cache FILE` | an SQLite cache of the audio judge's scores (below); `evaluate_timing.py` has the same option |
+
+**Audio cache.** Almost all of the align stage's time is audio work: on
+Dog Man, loading the audio took 8.9 s, the alignment model 4.0 s and the
+178 audio-judge calls 8.4 s, while every other step together took about
+0.1 s. With `--audio-cache`, each judge answer is stored under its video
+(path, size, modification time), WhisperX version, device, text, start,
+duration and padding, and the audio and model are loaded only when a
+question is not in the cache yet. A rerun that asks the same questions
+(e.g. after changing `finalize_timing`) skips all of it, and so does every
+evaluation, whose 240-call control test is the same each time. The
+pipeline keeps it in `lab/cache/<film>/confidence.sqlite`, git-ignored and
+deliberately not a DVC output (DVC deletes outputs before a run). Delete
+the folder to start fresh; bump `AudioJudge.CACHE_VERSION` when
+`AudioJudge.confidence` changes.
 
 #### Tuning constants
 
@@ -429,7 +451,7 @@ All commands run inside `lab/`.
 | Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
 | Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
 | Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |
-| What one step changed | `git diff --no-index out/dog-man-2025/steps/04_verify_with_audio.csv out/dog-man-2025/steps/05_rescue_local.csv` |
+| What one step changed | filter `out/<film>/changes.csv` by `step`, e.g. `05_rescue_local` |
 
 After a `dvc repro` that failed partway, DVC may not have written the
 `.gitignore` entries for the stages that did finish, and `git status` then

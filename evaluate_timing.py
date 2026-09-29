@@ -73,13 +73,15 @@ def audio_check(candidates, judge, margin=0.05, control_size=120):
     _, baseline, first = candidates[0]
     agree = [i for i, s in enumerate(baseline)
              if abs((first[i].start - s.start).total_seconds()) < 0.25]
-    random.seed(1)
+    # A private generator: loading the WhisperX model consumes the global
+    # one, so the samples would depend on when the model happens to load.
+    rng = random.Random(1)
     out = {"control": {}, "disputes": {}}
     print()
     for label, pool in (
             (f"{judge.MIN_WORDS}+ words", [i for i in agree if judgeable(baseline[i])]),
             ("shorter", [i for i in agree if not judgeable(baseline[i])])):
-        control = random.sample(pool, min(control_size, len(pool)))
+        control = rng.sample(pool, min(control_size, len(pool)))
         wins = sum(conf(baseline[i], baseline[i].start.total_seconds())
                    > conf(baseline[i], baseline[i].start.total_seconds() + 3)
                    for i in control)
@@ -119,6 +121,9 @@ def main():
                         help="Timelines to judge (cues are paired by text)")
     parser.add_argument("--audio", help="Video/audio file for the audio check")
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--audio-cache",
+                        help="SQLite file caching confidence scores across runs "
+                             "(shared with align_srt.py --audio-cache)")
     parser.add_argument("--json", help="Also write the numbers to this JSON file")
     args = parser.parse_args()
 
@@ -139,7 +144,9 @@ def main():
         paired.append((name, base, cand))
 
     if args.audio:
-        result.update(audio_check(paired, AudioJudge(args.audio, args.device)))
+        judge = AudioJudge(args.audio, args.device, cache_path=args.audio_cache)
+        result.update(audio_check(paired, judge))
+        print(judge.cache_summary())
 
     if args.json:
         Path(args.json).parent.mkdir(parents=True, exist_ok=True)

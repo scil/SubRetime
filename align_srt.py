@@ -409,23 +409,67 @@ class AudioJudge:
 
     Do not force-align over a wide window instead: CTC alignment assumes the
     window holds only the given text and snaps to other people's speech.
+
+    cache_path: an SQLite file remembering every answer, keyed by the media
+    file (path, size, mtime), WhisperX version, device, text, start,
+    duration and pad. The audio and the model load only on the first
+    question the cache cannot answer, so a rerun that asks the same
+    questions skips them. Bump CACHE_VERSION when confidence() changes.
     """
 
     MIN_WORDS = 3
+    CACHE_VERSION = 1
 
     def can_judge(self, text):
         return len(tokenize(text)) >= self.MIN_WORDS
 
-    def __init__(self, media_path, device="cuda"):
+    def __init__(self, media_path, device="cuda", cache_path=None):
+        self.media_path = Path(media_path)
+        self.device = device
+        self.whisperx = None
+        self.cache = None
+        if cache_path:
+            import sqlite3
+            from importlib.metadata import version
+
+            Path(cache_path).parent.mkdir(parents=True, exist_ok=True)
+            self.cache = sqlite3.connect(cache_path)
+            self.cache.execute("CREATE TABLE IF NOT EXISTS confidence "
+                               "(key TEXT PRIMARY KEY, value REAL)")
+            st = self.media_path.stat()
+            self.cache_prefix = [self.CACHE_VERSION, str(self.media_path.resolve()),
+                                 st.st_size, st.st_mtime_ns, version("whisperx"),
+                                 device]
+            self.hits = self.misses = 0
+
+    def _load(self):
         import whisperx  # optional dependency, only for --audio
 
         self.whisperx = whisperx
-        self.device = device
-        self.audio = whisperx.load_audio(str(media_path))
+        self.audio = whisperx.load_audio(str(self.media_path))
         self.model, self.meta = whisperx.load_align_model(
-            language_code="en", device=device)
+            language_code="en", device=self.device)
 
     def confidence(self, text, start, duration, pad=0.3):
+        if self.cache is None:
+            return self._confidence(text, start, duration, pad)
+        key = json.dumps(self.cache_prefix + [text, round(start, 6),
+                                              round(duration, 6), pad])
+        row = self.cache.execute("SELECT value FROM confidence WHERE key = ?",
+                                 (key,)).fetchone()
+        if row:
+            self.hits += 1
+            return row[0]
+        self.misses += 1
+        value = self._confidence(text, start, duration, pad)
+        self.cache.execute("INSERT OR REPLACE INTO confidence VALUES (?, ?)",
+                           (key, value))
+        self.cache.commit()
+        return value
+
+    def _confidence(self, text, start, duration, pad):
+        if self.whisperx is None:
+            self._load()
         seg = [{"start": max(0.0, start - pad), "end": start + duration + pad,
                 "text": text}]
         try:
@@ -434,7 +478,14 @@ class AudioJudge:
         except Exception:
             return 0.0
         scores = [w.get("score", 0.0) for w in out["word_segments"]]
-        return statistics.mean(scores) if scores else 0.0
+        # float(): a numpy float would not survive the SQLite round trip.
+        return float(statistics.mean(scores)) if scores else 0.0
+
+    def cache_summary(self):
+        if self.cache is None:
+            return "audio cache: off"
+        return (f"audio cache: {self.hits} hits, {self.misses} computed"
+                + ("" if self.whisperx else "; audio not loaded"))
 
 
 def verify_with_audio(results, judge, min_margin=0.05):
@@ -579,13 +630,52 @@ def write_snapshot(results, path):
             ])
 
 
+CHANGES_HEADER = ["step", "index", "status_before", "status_after",
+                  "start_before", "start_after", "moved_s", "end_before",
+                  "end_after", "text", "notes"]
+
+
+def _changed(a, b):
+    if a is None or b is None:
+        return a is not b
+    return abs(a - b) >= 0.0005
+
+
+def cue_changes(step_name, results, before):
+    """
+    Rows for the cues a step changed (status, start or end), measured
+    against `before`: {cue position: (status, start, end, notes count)}.
+    Updates `before` to the current state.
+    """
+    def fmt(t):
+        return "" if t is None else f"{t:.3f}"
+
+    rows = []
+    for i, r in enumerate(results):
+        if r.start is None:
+            continue  # no time yet: compare once a step gives it one
+        status, start, end, n_notes = before[i]
+        if (r.status != status or _changed(r.start, start)
+                or _changed(r.end, end)):
+            moved = ("" if r.start is None or start is None
+                     else f"{r.start - start:+.3f}")
+            rows.append([step_name, r.sub.index, status, r.status, fmt(start),
+                         fmt(r.start), moved, fmt(end), fmt(r.end),
+                         r.sub.content.replace("\n", " / "),
+                         "; ".join(r.notes[n_notes:])])
+        before[i] = (r.status, r.start, r.end, len(r.notes))
+    return rows
+
+
 def align_subtitles(original, new_words, judge=None, verbose=True,
-                    snapshot_dir=None, settings=None):
+                    snapshot_dir=None, settings=None, changes_path=None):
     """
     snapshot_dir: write the per-cue state after every step as
     NN_<step>.csv there (see write_snapshot).
     settings: {step name: {keyword: value}} overriding the steps' defaults
     (see TUNABLE and load_settings); development only.
+    changes_path: write one row per cue a step changed, starting from the
+    original subtitle's times (see cue_changes).
     """
     settings = settings or {}
 
@@ -593,12 +683,17 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
         return settings.get(name, {})
 
     step = 0
+    before = {i: ("original", s.start.total_seconds(), s.end.total_seconds(), 0)
+              for i, s in enumerate(original)}
+    changes = []
 
     def snapshot(name):
         nonlocal step
         step += 1
         if snapshot_dir:
             write_snapshot(results, Path(snapshot_dir) / f"{step:02d}_{name}.csv")
+        if changes_path:
+            changes.extend(cue_changes(f"{step:02d}_{name}", results, before))
 
     if snapshot_dir:
         Path(snapshot_dir).mkdir(parents=True, exist_ok=True)
@@ -636,6 +731,13 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
     snapshot("revert_out_of_order")
     finalize_timing(results, **kw("finalize_timing"))
     snapshot("finalize_timing")
+
+    if changes_path:
+        Path(changes_path).parent.mkdir(parents=True, exist_ok=True)
+        with open(changes_path, "w", encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(CHANGES_HEADER)
+            writer.writerows(changes)
 
     if verbose:
         for r in results:
@@ -748,6 +850,12 @@ def main():
     parser.add_argument("--params",
                         help="YAML file whose `align` section overrides the "
                              "steps' tuning constants (development)")
+    parser.add_argument("--changes",
+                        help="CSV of every line each step changed, starting "
+                             "from the original times (development)")
+    parser.add_argument("--audio-cache",
+                        help="SQLite file caching --audio confidence scores "
+                             "across runs (development)")
     args = parser.parse_args()
     settings = load_settings(args.params) if args.params else None
 
@@ -762,12 +870,16 @@ def main():
 
     judge = None
     if args.audio:
-        print(f"Loading audio for verification: {args.audio}")
-        judge = AudioJudge(args.audio, device=args.device)
+        print(f"Audio check with: {args.audio}")
+        judge = AudioJudge(args.audio, device=args.device,
+                           cache_path=args.audio_cache)
 
     results = align_subtitles(original, new_words, judge=judge,
                               verbose=not args.quiet,
-                              snapshot_dir=args.snapshots, settings=settings)
+                              snapshot_dir=args.snapshots, settings=settings,
+                              changes_path=args.changes)
+    if judge:
+        print(judge.cache_summary())
 
     output = [
         srt.Subtitle(

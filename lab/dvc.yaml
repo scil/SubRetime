@@ -4,6 +4,11 @@
 # selection.yaml (pick them with pick_films.py). Outputs go to work/<film>/
 # and out/<film>/ (git-ignored, cached by DVC per experiment), except the
 # metrics JSON files, which are committed.
+#
+# cache/<film>/confidence.sqlite remembers the audio judge's scores across
+# runs (align_srt.py --audio-cache). It is deliberately not a DVC output:
+# DVC deletes a stage's outputs before running it, which would empty the
+# cache every time. Delete the folder to start fresh.
 vars:
   - selection.yaml
 
@@ -31,6 +36,8 @@ stages:
         out/${key}/fixed.srt --audio "${item.video}" --quiet
         --report out/${key}/fixed.report.csv --snapshots out/${key}/steps
         --metrics out/${key}/align.json --params params.yaml
+        --changes out/${key}/changes.csv
+        --audio-cache cache/${key}/confidence.sqlite
       deps:
         - ../align_srt.py
         - ${item.original}
@@ -41,6 +48,7 @@ stages:
       outs:
         - out/${key}/fixed.srt
         - out/${key}/fixed.report.csv
+        - out/${key}/changes.csv
       metrics:
         - out/${key}/align.json:
             cache: false
@@ -56,6 +64,7 @@ stages:
       cmd: >-
         python ../evaluate_timing.py "${item.baseline}" out/${key}/fixed.srt
         --audio "${item.video}" --json out/${key}/eval.json
+        --audio-cache cache/${key}/confidence.sqlite
       deps:
         - ../evaluate_timing.py
         - ../align_srt.py
