@@ -209,7 +209,10 @@ ordering that step 1 guarantees.
 
 These are the real knobs. Each value was chosen by measurement on
 *Dog Man* (see LESSONS.md); change one only with `evaluate_timing.py`
-before and after.
+before and after. For development, most of them can be overridden without
+editing code: `align_srt.py --params FILE` reads the `align` section of a
+YAML file, and the DVC pipeline passes `lab/params.yaml` (see
+[Tuning constants](#tuning-constants)).
 
 | Constant | Value | Where | Why |
 |---|---|---|---|
@@ -364,7 +367,7 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `films.yaml` | every test film: video, subtitle, baseline (edited by hand) |
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
-| `params.yaml` | WhisperX settings used by `dvc.yaml` |
+| `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (not ignored by git; not committed yet) |
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
@@ -377,9 +380,38 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 Outputs other than the metrics files are git-ignored. DVC keeps them in its
 cache, one copy per run.
 
-The snapshots come from two development options of `align_srt.py`, which
-also work outside DVC: `--snapshots DIR` writes one CSV per step, and
-`--metrics FILE` writes the status counts.
+The snapshots come from development options of `align_srt.py`, which also
+work outside DVC: `--snapshots DIR` writes one CSV per step,
+`--metrics FILE` writes the status counts, and `--params FILE` overrides
+tuning constants (next section).
+
+#### Tuning constants
+
+The `align` section of `lab/params.yaml` holds the main tuning constants of
+`align_srt.py`, as `{step: {keyword: value}}`. Each step is a function in
+`align_srt.py`, and each keyword is one of its arguments:
+
+```yaml
+align:
+  rescue_local:
+    time_window: 1.5
+    min_score: 85
+```
+
+The values equal the defaults in the code, so without `--params` (and for
+every end user) nothing changes. `reject_outliers_audio` holds the
+tolerances used when `--audio` is on, which the pipeline always uses. Any
+other keyword argument of the steps listed in `TUNABLE` (in `align_srt.py`)
+can be added the same way; a misspelled step or keyword stops the run
+before any audio is loaded.
+
+Because the `align` stages list `align` under `params`, DVC reruns them when
+a value changes, and each value is a column in `dvc exp show` and the VS
+Code Experiments table. Try a value without editing the file:
+
+```powershell
+dvc exp run -S align.rescue_local.time_window=2 -n rescue-2s
+```
 
 #### Daily loop
 
@@ -393,6 +425,7 @@ All commands run inside `lab/`.
 | Current metrics | `dvc metrics show` |
 | Metrics vs the last commit | `dvc metrics diff` |
 | Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
+| Try a different tuning constant | `dvc exp run -S align.reject_outliers_audio.strong_dev=1.2 -n reject-1.2s` |
 | Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
 | Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
 | Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |

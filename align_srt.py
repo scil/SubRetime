@@ -23,6 +23,7 @@ import argparse
 import bisect
 import csv
 import difflib
+import inspect
 import json
 import re
 import statistics
@@ -375,8 +376,8 @@ def revert_out_of_order(results, tolerance=1.0):
     """
     A placed cue that starts after both following cues (or before both
     previous cues) contradicts the subtitle order; trusting it would make
-    the overlap guard push its neighbours by seconds. Fall back to the
-    interpolated time for it.
+    the overlap guard push its neighbours by seconds. Mark it an outlier
+    and return how many were reverted; the caller re-interpolates them.
     """
     reverted = 0
     for i, r in enumerate(results):
@@ -390,8 +391,6 @@ def revert_out_of_order(results, tolerance=1.0):
             r.notes.append(f"{r.status} but out of order, reverted")
             r.status = "outlier"
             reverted += 1
-    if reverted:
-        interpolate_missing(results)
     return reverted
 
 
@@ -581,11 +580,18 @@ def write_snapshot(results, path):
 
 
 def align_subtitles(original, new_words, judge=None, verbose=True,
-                    snapshot_dir=None):
+                    snapshot_dir=None, settings=None):
     """
     snapshot_dir: write the per-cue state after every step as
     NN_<step>.csv there (see write_snapshot).
+    settings: {step name: {keyword: value}} overriding the steps' defaults
+    (see TUNABLE and load_settings); development only.
     """
+    settings = settings or {}
+
+    def kw(name):
+        return settings.get(name, {})
+
     step = 0
 
     def snapshot(name):
@@ -606,26 +612,29 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
             orig_owner.append(ci)
 
     new_tokens = [w.text for w in new_words]
-    mapping = align_words(orig_tokens, new_tokens)
+    mapping = align_words(orig_tokens, new_tokens, **kw("align_words"))
 
-    results = time_cues(original, orig_owner, mapping, new_words)
+    results = time_cues(original, orig_owner, mapping, new_words,
+                        **kw("time_cues"))
     snapshot("time_cues")
     # With audio to settle disputes, reject more eagerly and let it decide.
     if judge:
-        reject_outliers(results, strong_dev=1.0, weak_dev=1.0)
+        reject_outliers(results, **{"strong_dev": 1.0, "weak_dev": 1.0,
+                                    **kw("reject_outliers_audio")})
     else:
-        reject_outliers(results)
+        reject_outliers(results, **kw("reject_outliers"))
     snapshot("reject_outliers")
-    interpolate_missing(results)
+    interpolate_missing(results, **kw("interpolate_missing"))
     snapshot("interpolate_missing")
     if judge:
-        verify_with_audio(results, judge)
+        verify_with_audio(results, judge, **kw("verify_with_audio"))
         snapshot("verify_with_audio")
-    rescue_local(results, new_words, judge)
+    rescue_local(results, new_words, judge, **kw("rescue_local"))
     snapshot("rescue_local")
-    revert_out_of_order(results)
+    if revert_out_of_order(results, **kw("revert_out_of_order")):
+        interpolate_missing(results, **kw("interpolate_missing"))
     snapshot("revert_out_of_order")
-    finalize_timing(results)
+    finalize_timing(results, **kw("finalize_timing"))
     snapshot("finalize_timing")
 
     if verbose:
@@ -656,6 +665,41 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
     print(f"Total cues:    {len(results)}")
 
     return results
+
+
+# Steps whose keyword arguments --params may override. With --audio,
+# reject_outliers is called with its own settings (reject_outliers_audio).
+TUNABLE = {
+    "align_words": align_words,
+    "time_cues": time_cues,
+    "reject_outliers": reject_outliers,
+    "reject_outliers_audio": reject_outliers,
+    "interpolate_missing": interpolate_missing,
+    "verify_with_audio": verify_with_audio,
+    "rescue_local": rescue_local,
+    "revert_out_of_order": revert_out_of_order,
+    "finalize_timing": finalize_timing,
+}
+
+
+def load_settings(path):
+    """
+    Read the `align` section of a YAML file: {step: {keyword: value}}.
+    Checked against the step signatures here, before any slow work starts.
+    """
+    import yaml  # development dependency, only for --params
+
+    with open(path, "r", encoding="utf-8") as f:
+        settings = (yaml.safe_load(f) or {}).get("align") or {}
+    for name, values in settings.items():
+        if name not in TUNABLE:
+            raise SystemExit(f"{path}: unknown step '{name}' "
+                             f"(known: {', '.join(TUNABLE)})")
+        try:
+            inspect.signature(TUNABLE[name]).bind_partial(**values)
+        except TypeError as e:
+            raise SystemExit(f"{path}: align.{name}: {e}")
+    return settings
 
 
 def write_report(results, path):
@@ -701,7 +745,11 @@ def main():
                         help="Directory for per-step CSV snapshots (development)")
     parser.add_argument("--metrics",
                         help="JSON file for status counts (development)")
+    parser.add_argument("--params",
+                        help="YAML file whose `align` section overrides the "
+                             "steps' tuning constants (development)")
     args = parser.parse_args()
+    settings = load_settings(args.params) if args.params else None
 
     with open(args.original, "r", encoding="utf-8-sig") as f:
         original = list(srt.parse(f.read()))
@@ -719,7 +767,7 @@ def main():
 
     results = align_subtitles(original, new_words, judge=judge,
                               verbose=not args.quiet,
-                              snapshot_dir=args.snapshots)
+                              snapshot_dir=args.snapshots, settings=settings)
 
     output = [
         srt.Subtitle(

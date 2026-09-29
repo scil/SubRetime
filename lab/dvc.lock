@@ -54,12 +54,13 @@ stages:
       (2025) [1080p] [WEBRip] [5.1] 
       [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --quiet 
       --report out/dog-man-2025/fixed.report.csv --snapshots 
-      out/dog-man-2025/steps --metrics out/dog-man-2025/align.json
+      out/dog-man-2025/steps --metrics out/dog-man-2025/align.json --params 
+      params.yaml
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 2a543f8c29693a8b51de5184388acae3
-      size: 29635
+      md5: 01352453c41c42c427e4f74994a34f36
+      size: 31786
     - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
         [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
       hash: md5
@@ -74,6 +75,29 @@ stages:
       md5: 7cb5749c42b1abcc032c49bb549b3277.dir
       size: 1050983
       nfiles: 1
+    params:
+      params.yaml:
+        align:
+          align_words:
+            min_sim: 0.75
+          time_cues:
+            max_word_gap: 1.5
+          reject_outliers:
+            strong_dev: 1.5
+            weak_dev: 1.0
+            window: 8
+          reject_outliers_audio:
+            strong_dev: 1.0
+            weak_dev: 1.0
+          interpolate_missing:
+            side: 3
+          verify_with_audio:
+            min_margin: 0.05
+          rescue_local:
+            time_window: 1.5
+            min_score: 85
+          revert_out_of_order:
+            tolerance: 1.0
     outs:
     - path: out/dog-man-2025/align.json
       hash: md5
@@ -98,12 +122,13 @@ stages:
       "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
       264-RAWR[EZTVx.to].mkv" --quiet --report 
       out/ann-droid-s01e01/fixed.report.csv --snapshots 
-      out/ann-droid-s01e01/steps --metrics out/ann-droid-s01e01/align.json
+      out/ann-droid-s01e01/steps --metrics out/ann-droid-s01e01/align.json 
+      --params params.yaml
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 2a543f8c29693a8b51de5184388acae3
-      size: 29635
+      md5: 01352453c41c42c427e4f74994a34f36
+      size: 31786
     - path: F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
         264-RAWR[EZTVx.to].mkv
       hash: md5
@@ -118,6 +143,29 @@ stages:
       md5: fd785aa686e423bce769ea07d061adbd.dir
       size: 468068
       nfiles: 1
+    params:
+      params.yaml:
+        align:
+          align_words:
+            min_sim: 0.75
+          time_cues:
+            max_word_gap: 1.5
+          reject_outliers:
+            strong_dev: 1.5
+            weak_dev: 1.0
+            window: 8
+          reject_outliers_audio:
+            strong_dev: 1.0
+            weak_dev: 1.0
+          interpolate_missing:
+            side: 3
+          verify_with_audio:
+            min_margin: 0.05
+          rescue_local:
+            time_window: 1.5
+            min_score: 85
+          revert_out_of_order:
+            tolerance: 1.0
     outs:
     - path: out/ann-droid-s01e01/align.json
       hash: md5
@@ -144,8 +192,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 2a543f8c29693a8b51de5184388acae3
-      size: 29635
+      md5: 01352453c41c42c427e4f74994a34f36
+      size: 31786
     - path: ../evaluate_timing.py
       hash: md5
       md5: a1c602a6319fb830ccd1acfd690ba256
@@ -171,8 +219,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 2a543f8c29693a8b51de5184388acae3
-      size: 29635
+      md5: 01352453c41c42c427e4f74994a34f36
+      size: 31786
     - path: ../evaluate_timing.py
       hash: md5
       md5: a1c602a6319fb830ccd1acfd690ba256

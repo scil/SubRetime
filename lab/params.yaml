@@ -5,3 +5,29 @@ whisper:
   language: en
   device: cuda
   compute_type: float16
+
+# Tuning constants of align_srt.py, passed with --params: {step: {keyword:
+# value}}. The values equal the code's defaults, measured on Dog Man (README
+# "Key constants"). Any other keyword argument of these steps can be added
+# the same way; try one with `dvc exp run -S align.rescue_local.time_window=2`.
+align:
+  align_words:
+    min_sim: 0.75            # fuzzy word similarity inside gaps
+  time_cues:
+    max_word_gap: 1.5        # s: drop an edge word this far beyond the original duration
+  reject_outliers:           # without --audio
+    strong_dev: 1.5          # s: tolerance for strongly matched lines
+    weak_dev: 1.0            # s: tolerance for weakly matched lines
+    window: 8                # anchored lines on each side for the local offset
+  reject_outliers_audio:     # with --audio (the pipeline uses --audio)
+    strong_dev: 1.0
+    weak_dev: 1.0
+  interpolate_missing:
+    side: 3                  # anchored lines on each side for the fallback median
+  verify_with_audio:
+    min_margin: 0.05         # confidence margin for the audio to overrule
+  rescue_local:
+    time_window: 1.5         # s: search around the fallback time
+    min_score: 85            # fuzz.ratio needed to accept a local match
+  revert_out_of_order:
+    tolerance: 1.0           # s

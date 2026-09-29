@@ -30,12 +30,14 @@ stages:
         python ../align_srt.py "${item.original}" work/${key}/whisper
         out/${key}/fixed.srt --audio "${item.video}" --quiet
         --report out/${key}/fixed.report.csv --snapshots out/${key}/steps
-        --metrics out/${key}/align.json
+        --metrics out/${key}/align.json --params params.yaml
       deps:
         - ../align_srt.py
         - ${item.original}
         - ${item.video}
         - work/${key}/whisper
+      params:
+        - align
       outs:
         - out/${key}/fixed.srt
         - out/${key}/fixed.report.csv

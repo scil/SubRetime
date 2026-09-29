@@ -2,3 +2,4 @@
 # "Development workflow (DVC)". Tested with dvc 3.67.1.
 -r requirements.txt
 dvc>=3.50
+pyyaml           # align_srt.py --params, lab/pick_films.py
