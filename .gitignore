@@ -2,6 +2,9 @@
 __pycache__/
 *.pyc
 
+# shared VS Code settings (overrides a global ignore of .vscode)
+!.vscode/
+
 # generated outputs
 *.report.csv
 dvc_plots/

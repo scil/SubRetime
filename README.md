@@ -253,10 +253,12 @@ params changed, and it keeps every run's outputs and metrics so runs can be
 compared. The DVC extension for VS Code shows the runs as a table, with
 charts next to it.
 
-Everything DVC-related lives in **`lab/`**, a self-contained DVC project
-(created with `dvc init --subdir`): its `.dvc/` folder, the pipeline files,
-the test subtitles and all outputs. The rest of the repository does not
-depend on it. **Run every `dvc` command from inside `lab/`.**
+The DVC project is the repository root (`.dvc/`, `.dvcignore`), so the VS
+Code extension finds it without extra setup. Everything else DVC-related
+lives in **`lab/`**: the pipeline files, the test subtitles and all outputs.
+The rest of the repository does not depend on it. **Run every `dvc` command
+from inside `lab/`**, so `dvc repro` and `dvc exp run` pick up
+`lab/dvc.yaml`.
 
 #### Install
 
@@ -272,7 +274,7 @@ These steps assume the normal [Installation](#installation) above is done
    ```
 
 2. Optionally, turn off DVC's anonymous usage statistics for this project
-   (the setting lives in `lab\.dvc\config.local`, which is not committed):
+   (the setting lives in `.dvc\config.local`, which is not committed):
 
    ```powershell
    cd lab
@@ -290,9 +292,8 @@ These steps assume the normal [Installation](#installation) above is done
    `.venv\Scripts\python.exe`: the DVC extension finds the `dvc` command
    through the interpreter the Python extension uses. The DVC icon then
    appears in the activity bar. If it reports that DVC was not found, open
-   **DVC: Setup the Workspace** and pick the same interpreter. The extension
-   finds the project in `lab/` by itself; if it does not, run **DVC: Select
-   Project(s) to Focus** and pick `lab`.
+   **DVC: Setup the Workspace** and pick the same interpreter.
+   (`.vscode\settings.json` already points `dvc.pythonPath` at it.)
 
 4. Pick a **film id** for each test video: lowercase words joined by `-`
    that name exactly one video, with the year for a film and the episode for
@@ -354,10 +355,10 @@ These steps assume the normal [Installation](#installation) above is done
    The first run of the align and evaluate stages takes a few minutes per
    film: both load the audio and the alignment model.
 
-`lab/` has already been initialized and committed (`lab/.dvc/`,
-`lab/.dvcignore`), so a fresh clone needs only the steps above. No DVC
+DVC has already been initialized and committed (`.dvc/`, `.dvcignore` at
+the repository root), so a fresh clone needs only the steps above. No DVC
 remote is configured: transcripts and outputs exist only in this machine's
-cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
+cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 
 #### Files in `lab/`
 
@@ -377,7 +378,6 @@ cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `cache/<film>/confidence.sqlite` | audio judge scores reused across runs (git-ignored, not a DVC output) |
 | `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
 | `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
-| `.dvc/`, `.dvcignore` | DVC's own configuration; `.dvc/cache` holds every run's outputs (git-ignored) |
 
 Outputs other than the metrics files are git-ignored. DVC keeps them in its
 cache, one copy per run.

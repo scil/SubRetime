@@ -1,0 +1,3 @@
+{
+  "dvc.pythonPath": "${workspaceFolder}/.venv/Scripts/python.exe"
+}
