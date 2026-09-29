@@ -1,0 +1,61 @@
+# Development pipeline. Run DVC commands from this lab/ directory, which is
+# a self-contained DVC project (`dvc init --subdir`). `dvc repro` reruns only
+# the stages whose inputs, code or params changed; `dvc repro align@<film>`
+# runs one film. Outputs go to work/<film>/ and out/<film>/ (git-ignored,
+# cached by DVC per experiment), except the metrics JSON files, which are
+# committed.
+stages:
+  transcribe:
+    foreach: ${films}
+    do:
+      cmd: >-
+        whisperx "${item.video}" --language ${whisper.language}
+        --model ${whisper.model} --device ${whisper.device}
+        --compute_type ${whisper.compute_type}
+        --output_format json --output_dir work/${key}/whisper
+      deps:
+        - ${item.video}
+      params:
+        - whisper
+      outs:
+        - work/${key}/whisper
+
+  align:
+    foreach: ${films}
+    do:
+      cmd: >-
+        python ../align_srt.py "${item.original}" work/${key}/whisper
+        out/${key}/fixed.srt --audio "${item.video}" --quiet
+        --report out/${key}/fixed.report.csv --snapshots out/${key}/steps
+        --metrics out/${key}/align.json
+      deps:
+        - ../align_srt.py
+        - ${item.original}
+        - ${item.video}
+        - work/${key}/whisper
+      outs:
+        - out/${key}/fixed.srt
+        - out/${key}/fixed.report.csv
+      metrics:
+        - out/${key}/align.json:
+            cache: false
+      plots:
+        # One chart per step snapshot: shift of every cue against the original.
+        - out/${key}/steps:
+            x: index
+            y: shift_s
+
+  evaluate:
+    foreach: ${films}
+    do:
+      cmd: >-
+        python ../evaluate_timing.py "${item.baseline}" out/${key}/fixed.srt
+        --audio "${item.video}" --json out/${key}/eval.json
+      deps:
+        - ../evaluate_timing.py
+        - ../align_srt.py
+        - ${item.baseline}
+        - out/${key}/fixed.srt
+      metrics:
+        - out/${key}/eval.json:
+            cache: false

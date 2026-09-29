@@ -4,3 +4,4 @@ __pycache__/
 
 # generated outputs
 *.report.csv
+dvc_plots/

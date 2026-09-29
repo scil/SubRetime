@@ -1,0 +1,4 @@
+# Development tools on top of requirements.txt; see README.md
+# "Development workflow (DVC)". Tested with dvc 3.67.1.
+-r requirements.txt
+dvc>=3.50

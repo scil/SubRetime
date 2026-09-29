@@ -101,7 +101,16 @@ def _fill_missing_times(raw: list[dict]) -> list[Word]:
 
 
 def load_whisper_words(path: Path) -> tuple[list[Word], str]:
-    """Return WhisperX words with times, preferring the JSON next to an SRT."""
+    """
+    Return WhisperX words with times, preferring the JSON next to an SRT.
+    A directory must hold exactly one WhisperX .json (the DVC pipeline passes
+    its output directory, whose file is named after the video).
+    """
+    if path.is_dir():
+        found = sorted(path.glob("*.json"))
+        if len(found) != 1:
+            raise SystemExit(f"{path}: expected one WhisperX .json, found {len(found)}")
+        path = found[0]
     json_path = path if path.suffix.lower() == ".json" else path.with_suffix(".json")
 
     if json_path.exists():
@@ -552,7 +561,44 @@ def finalize_timing(results, min_gap=0.084, chars_per_sec=17.0, min_dur=0.8,
 # Main pipeline
 # ---------------------------------------------------------------------------
 
-def align_subtitles(original, new_words, judge=None, verbose=True):
+def write_snapshot(results, path):
+    """One row per cue after a pipeline step, for diffing steps and runs."""
+    def fmt(t):
+        return "" if t is None else f"{t:.3f}"
+
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["index", "status", "matched_words", "words",
+                         "orig_start", "start", "end", "shift_s", "text", "notes"])
+        for r in results:
+            orig_start = r.sub.start.total_seconds()
+            writer.writerow([
+                r.sub.index, r.status, r.matched, r.words, f"{orig_start:.3f}",
+                fmt(r.start), fmt(r.end),
+                "" if r.start is None else f"{r.start - orig_start:+.3f}",
+                r.sub.content.replace("\n", " / "), "; ".join(r.notes),
+            ])
+
+
+def align_subtitles(original, new_words, judge=None, verbose=True,
+                    snapshot_dir=None):
+    """
+    snapshot_dir: write the per-cue state after every step as
+    NN_<step>.csv there (see write_snapshot).
+    """
+    step = 0
+
+    def snapshot(name):
+        nonlocal step
+        step += 1
+        if snapshot_dir:
+            write_snapshot(results, Path(snapshot_dir) / f"{step:02d}_{name}.csv")
+
+    if snapshot_dir:
+        Path(snapshot_dir).mkdir(parents=True, exist_ok=True)
+        for old in Path(snapshot_dir).glob("*.csv"):
+            old.unlink()
+
     orig_tokens, orig_owner = [], []
     for ci, sub in enumerate(original):
         for token in tokenize(sub.content):
@@ -563,17 +609,24 @@ def align_subtitles(original, new_words, judge=None, verbose=True):
     mapping = align_words(orig_tokens, new_tokens)
 
     results = time_cues(original, orig_owner, mapping, new_words)
+    snapshot("time_cues")
     # With audio to settle disputes, reject more eagerly and let it decide.
     if judge:
         reject_outliers(results, strong_dev=1.0, weak_dev=1.0)
     else:
         reject_outliers(results)
+    snapshot("reject_outliers")
     interpolate_missing(results)
+    snapshot("interpolate_missing")
     if judge:
         verify_with_audio(results, judge)
+        snapshot("verify_with_audio")
     rescue_local(results, new_words, judge)
+    snapshot("rescue_local")
     revert_out_of_order(results)
+    snapshot("revert_out_of_order")
     finalize_timing(results)
+    snapshot("finalize_timing")
 
     if verbose:
         for r in results:
@@ -644,6 +697,10 @@ def main():
                         help="Device for --audio (default: cuda)")
     parser.add_argument("--quiet", action="store_true",
                         help="Only print the summary")
+    parser.add_argument("--snapshots",
+                        help="Directory for per-step CSV snapshots (development)")
+    parser.add_argument("--metrics",
+                        help="JSON file for status counts (development)")
     args = parser.parse_args()
 
     with open(args.original, "r", encoding="utf-8-sig") as f:
@@ -661,7 +718,8 @@ def main():
         judge = AudioJudge(args.audio, device=args.device)
 
     results = align_subtitles(original, new_words, judge=judge,
-                              verbose=not args.quiet)
+                              verbose=not args.quiet,
+                              snapshot_dir=args.snapshots)
 
     output = [
         srt.Subtitle(
@@ -673,11 +731,24 @@ def main():
         )
         for r in results
     ]
+    Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     with open(args.output, "w", encoding="utf-8") as f:
         f.write(srt.compose(output, reindex=False))
 
     report = args.report or str(Path(args.output).with_suffix(".report.csv"))
     write_report(results, report)
+
+    if args.metrics:
+        metrics = {s: sum(r.status == s for r in results)
+                   for s in ("anchored", "verified", "rescued", "outlier",
+                             "interpolated", "none")}
+        metrics["cues"] = len(results)
+        metrics["cue_words_matched_pct"] = round(
+            100 * sum(r.matched for r in results)
+            / max(sum(r.words for r in results), 1), 2)
+        Path(args.metrics).parent.mkdir(parents=True, exist_ok=True)
+        with open(args.metrics, "w", encoding="utf-8") as f:
+            json.dump(metrics, f, indent=2)
 
     print()
     print(f"Saved:  {args.output}")

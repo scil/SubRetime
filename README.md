@@ -242,6 +242,175 @@ prints:
   baseline, how often the audio prefers the candidate (wins / losses /
   ties / unjudged).
 
+### Development workflow (DVC)
+
+[DVC](https://dvc.org) runs the whole chain (transcribe → align → evaluate)
+on a set of test films. It reruns only the stages whose code, inputs or
+params changed, and it keeps every run's outputs and metrics so runs can be
+compared. The DVC extension for VS Code shows the runs as a table, with
+charts next to it.
+
+Everything DVC-related lives in **`lab/`**, a self-contained DVC project
+(created with `dvc init --subdir`): its `.dvc/` folder, the pipeline files,
+the test subtitles and all outputs. The rest of the repository does not
+depend on it. **Run every `dvc` command from inside `lab/`.**
+
+#### Install
+
+These steps assume the normal [Installation](#installation) above is done
+(`.venv` exists and WhisperX works).
+
+1. Install DVC into the project environment:
+
+   ```powershell
+   .\.venv\Scripts\Activate.ps1
+   uv pip install -r requirements-dev.txt    # or: python -m pip install -r requirements-dev.txt
+   dvc --version
+   ```
+
+2. Optionally, turn off DVC's anonymous usage statistics for this project
+   (the setting lives in `lab\.dvc\config.local`, which is not committed):
+
+   ```powershell
+   cd lab
+   dvc config --local core.analytics false
+   ```
+
+3. Install the VS Code extension, then open the repository folder in VS Code:
+
+   ```powershell
+   code --install-extension iterative.dvc
+   code .
+   ```
+
+   In VS Code, run **Python: Select Interpreter** and pick
+   `.venv\Scripts\python.exe`: the DVC extension finds the `dvc` command
+   through the interpreter the Python extension uses. The DVC icon then
+   appears in the activity bar. If it reports that DVC was not found, open
+   **DVC: Setup the Workspace** and pick the same interpreter. The extension
+   finds the project in `lab/` by itself; if it does not, run **DVC: Select
+   Project(s) to Focus** and pick `lab`.
+
+4. Pick a **film id** for each test video: lowercase words joined by `-`
+   that name exactly one video, with the year for a film and the episode for
+   a series (`dog-man-2025`, `ann-droid-s01e01`), so `ann-droid-s01e02` can
+   be added later without a clash.
+
+5. Put each film's subtitles in `lab\films\<film id>\`. They are ordinary
+   files committed to git, so a clone brings them along and git keeps their
+   history.
+
+   ```powershell
+   New-Item -ItemType Directory -Force lab\films\dog-man-2025
+   Copy-Item -LiteralPath "F:\Videos\Subs\English.srt" lab\films\dog-man-2025\original.srt
+   Copy-Item -LiteralPath "F:\Videos\Subs\movie.synced-by-ffsubsync.srt" lab\films\dog-man-2025\ffsubsync.srt
+   ```
+
+   Videos stay where they are: they are too large for the repository, and
+   DVC still records their hash as a stage input.
+
+6. List the films in `lab\params.yaml` (paths there are relative to `lab/`).
+   Every entry under `films` gets its own stages: `transcribe@<film id>`,
+   `align@<film id>` and `evaluate@<film id>`.
+
+   | Key | Meaning |
+   |---|---|
+   | `films.<id>.video` | the video (audio source for WhisperX and `--audio`); an absolute path is fine |
+   | `films.<id>.original` | the subtitle to retime, as downloaded, e.g. `films/dog-man-2025/original.srt` |
+   | `films.<id>.baseline` | reference timeline for `evaluate_timing.py`, e.g. `films/dog-man-2025/ffsubsync.srt` |
+   | `whisper.*` | WhisperX model, language, device, compute type (shared by all films) |
+
+7. Optional: reuse an existing WhisperX transcript instead of spending
+   about 10 minutes per film on the transcribe stage. Copy its `.json` into
+   `lab\work\<film id>\whisper\` and record it as that stage's output:
+
+   ```powershell
+   cd lab
+   New-Item -ItemType Directory -Force work\dog-man-2025\whisper
+   Copy-Item -LiteralPath "F:\Videos\whisper-output\movie.json" -Destination work\dog-man-2025\whisper\
+   dvc commit -f transcribe@dog-man-2025
+   ```
+
+8. Run the pipeline:
+
+   ```powershell
+   cd lab
+   dvc repro
+   ```
+
+   The first run of the align and evaluate stages takes a few minutes per
+   film: both load the audio and the alignment model.
+
+`lab/` has already been initialized and committed (`lab/.dvc/`,
+`lab/.dvcignore`), so a fresh clone needs only the steps above. No DVC
+remote is configured: transcripts and outputs exist only in this machine's
+cache (`lab\.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
+
+#### Files in `lab/`
+
+| File | Purpose |
+|---|---|
+| `dvc.yaml` | stages `transcribe`, `align`, `evaluate`, repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
+| `params.yaml` | the film list and WhisperX settings used by `dvc.yaml` |
+| `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
+| `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
+| `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
+| `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
+| `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
+| `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
+| `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
+| `.dvc/`, `.dvcignore` | DVC's own configuration; `.dvc/cache` holds every run's outputs (git-ignored) |
+
+Outputs other than the metrics files are git-ignored. DVC keeps them in its
+cache, one copy per run.
+
+The snapshots come from two development options of `align_srt.py`, which
+also work outside DVC: `--snapshots DIR` writes one CSV per step, and
+`--metrics FILE` writes the status counts.
+
+#### Daily loop
+
+All commands run inside `lab/`.
+
+| Goal | Command |
+|---|---|
+| Run what changed | `dvc repro` |
+| Run one film only | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
+| Current metrics | `dvc metrics show` |
+| Metrics vs the last commit | `dvc metrics diff` |
+| Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
+| Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
+| Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
+| Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |
+| What one step changed | `git diff --no-index out/dog-man-2025/steps/04_verify_with_audio.csv out/dog-man-2025/steps/05_rescue_local.csv` |
+
+After a `dvc repro` that failed partway, DVC may not have written the
+`.gitignore` entries for the stages that did finish, and `git status` then
+lists outputs such as `out/<film>/fixed.srt`. Run `dvc commit -f` to write
+them before committing; otherwise run outputs end up in git.
+
+`dvc exp run` takes a copy of the uncommitted code with each run, so trying a
+change does not need a commit first. In the VS Code **Experiments** table,
+tick the runs to compare; the **Plots** view then draws their per-step
+charts side by side.
+
+**Choosing a film in VS Code.** DVC has no "current film" switch: its
+templates cannot look up `films[<param>]`, so every listed film runs.
+Choose what you look at instead:
+
+- **Plots**: run **DVC: Select Plots to Display** from the Command Palette
+  (Ctrl+Shift+P). It lists one entry per `out/<film>/steps/<step>.csv`;
+  tick the films and steps to show.
+- **Experiments** table: the metric columns are grouped by file,
+  `out/<film>/align.json` and `out/<film>/eval.json`. Run **DVC: Select
+  Columns to Display in the Experiments Table** and untick the other films.
+- To run a single film, use `dvc repro align@<film id>` in the terminal, or
+  comment the other films out in `params.yaml` for a while.
+
+To add a step, write the function, call it in `align_subtitles()`, and add
+a `snapshot("<name>")` call after it. Later snapshot numbers shift by one,
+so compare snapshots by step name rather than by number across runs.
+
 ### Project layout
 
 | File | Purpose |
@@ -250,6 +419,8 @@ prints:
 | `evaluate_timing.py` | quality check against the audio |
 | `gui.py` | Tkinter front end for `align_srt.py` |
 | `requirements.txt` | Python dependencies |
+| `requirements-dev.txt` | development tools (DVC) |
+| `lab/` | DVC development pipeline, test subtitles and run outputs (see [Development workflow](#development-workflow-dvc)) |
 | `LESSONS.md` | what went wrong while building this, and why the design is what it is |
 | `TROUBLESHOOTING.md` | installation and Windows problems |
 | `README.zh.md` | the old Chinese README (outdated) |
