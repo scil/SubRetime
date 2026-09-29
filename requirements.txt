@@ -1,0 +1,7 @@
+# Install PyTorch with CUDA separately if WhisperX pulls in a CPU-only build;
+# see README.md "Installation".
+# Tested with: whisperx 3.8.6, torch/torchaudio 2.8.0+cu128, srt 3.5.3,
+# rapidfuzz 3.14.6, Python 3.13.
+whisperx>=3.8
+srt>=3.5
+rapidfuzz>=3.0
