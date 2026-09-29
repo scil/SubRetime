@@ -49,8 +49,10 @@ problem.
 - WhisperX forced alignment sometimes pins an edge word seconds away
   (`petey's@823.8 first@830.5`), smears a line over 15 s during music, or
   places a whole segment 8-20 s early.
-- The original subtitle, even after ffsubsync, is several seconds off for
-  some single lines. ffsubsync fixes only a global shift or speed.
+- The original subtitle's own timing is usually 0.2–0.5 s off per line,
+  occasionally 1–3 s (measured with the audio test on 3+ word lines; the
+  larger cases had slim margins). ffsubsync fixes only a global shift or
+  speed, not single lines.
 - Repeated words ("Papa?" "Papa." "Papa!", "no", "okay") get paired with
   the wrong copy by any global text alignment.
 
