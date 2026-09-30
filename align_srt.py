@@ -619,14 +619,16 @@ def write_snapshot(results, path):
     with open(path, "w", encoding="utf-8", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["index", "status", "matched_words", "words",
-                         "orig_start", "start", "end", "shift_s", "text", "notes"])
+                         "orig_start", "start", "end", "shift_s", "text",
+                         "whisper_text", "notes"])
         for r in results:
             orig_start = r.sub.start.total_seconds()
             writer.writerow([
                 r.sub.index, r.status, r.matched, r.words, f"{orig_start:.3f}",
                 fmt(r.start), fmt(r.end),
                 "" if r.start is None else f"{r.start - orig_start:+.3f}",
-                r.sub.content.replace("\n", " / "), "; ".join(r.notes),
+                r.sub.content.replace("\n", " / "), r.matched_text,
+                "; ".join(r.notes),
             ])
 
 

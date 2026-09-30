@@ -60,8 +60,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: c77566f3b6a8a870ee9f7caf7f1ea383
-      size: 36641
+      md5: 8e088be08bbdf682b8c80f5c919a69b5
+      size: 36714
     - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
         [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
       hash: md5
@@ -118,8 +118,8 @@ stages:
       size: 92059
     - path: out/dog-man-2025/steps
       hash: md5
-      md5: 842b6d056acae7c0ec709b149a78b323.dir
-      size: 819249
+      md5: 6eea9173b2fddde46c357a5dd60a4cf3.dir
+      size: 1029228
       nfiles: 7
   align@ann-droid-s01e01:
     cmd: python ../align_srt.py "films/ann-droid-s01e01/original.srt" 
@@ -133,8 +133,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: c77566f3b6a8a870ee9f7caf7f1ea383
-      size: 36641
+      md5: 8e088be08bbdf682b8c80f5c919a69b5
+      size: 36714
     - path: F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
         264-RAWR[EZTVx.to].mkv
       hash: md5
@@ -191,8 +191,8 @@ stages:
       size: 32794
     - path: out/ann-droid-s01e01/steps
       hash: md5
-      md5: e6219589d87400aa2bc65d4caf22fdc9.dir
-      size: 277247
+      md5: 68d9f169ae029979d46b5db22ade43f2.dir
+      size: 370027
       nfiles: 7
   evaluate@dog-man-2025:
     cmd: python ../evaluate_timing.py "films/dog-man-2025/ffsubsync.srt" 
@@ -203,8 +203,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: c77566f3b6a8a870ee9f7caf7f1ea383
-      size: 36641
+      md5: 8e088be08bbdf682b8c80f5c919a69b5
+      size: 36714
     - path: ../evaluate_timing.py
       hash: md5
       md5: 08ac26ee3bd293c431adf39cbb0d0250
@@ -231,8 +231,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: c77566f3b6a8a870ee9f7caf7f1ea383
-      size: 36641
+      md5: 8e088be08bbdf682b8c80f5c919a69b5
+      size: 36714
     - path: ../evaluate_timing.py
       hash: md5
       md5: 08ac26ee3bd293c431adf39cbb0d0250
