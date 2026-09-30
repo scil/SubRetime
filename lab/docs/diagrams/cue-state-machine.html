@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字幕状态机 · State machine</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f5f5f5;   /* white-smoke */
+      --color-ink:     #2d3142;   /* jet-black */
+      --color-muted:   #4f5d75;   /* blue-slate */
+      --color-accent:  #eb6c36;   /* atomic-tangerine */
+      --font-sans:     'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif SC', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1320px; width: 100%; min-width: 0; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+
+    svg { width: 100%; min-width: 1280px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">State machine · align_srt.py</p>
+    <h1>字幕状态机：七步各自只处理哪些状态</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-state-machine-title cue-state-machine-desc">
+        <title id="cue-state-machine-title">字幕状态机：七步各自只处理哪些状态</title>
+        <desc id="cue-state-machine-desc">align_srt.py 中每条字幕的状态机：01 把字幕分为 anchored 或 none，02 把偏离邻居的 anchored 降为 outlier，03 为 none 和 outlier 插值，04（仅 --audio）与 05 把 outlier 找回为 verified 或 rescued，06 把乱序的已定位字幕退回 outlier，07 只调整时长不改状态。</desc>
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+        </defs>
+
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+        <!-- ============ Zones (painted first) ============ -->
+        <!-- PLACED zone: anchored, verified, rescued -->
+        <rect x="176" y="96" width="968" height="148" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="192" y="120" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">PLACED</text>
+        <text x="244" y="121" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">时间取自 WhisperX 词</text>
+
+        <!-- 07 finalize band (single annotation for all states) -->
+        <rect x="176" y="592" width="968" height="44" rx="8" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.20)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="192" y="618" fill="#2d3142" font-size="9" font-weight="500" font-family="'Geist Mono', monospace">07 finalize_timing</text>
+        <text x="312" y="619" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">所有状态 → 调整时长，状态不变</text>
+        <text x="1128" y="618" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="end">gap 0.084s · 17 chars/s · 0.8–7s · start ≤0.5s earlier</text>
+
+        <!-- ============ Transitions (drawn before nodes) ============ -->
+        <!-- 01 start → anchored -->
+        <line x1="86" y1="176" x2="200" y2="176" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 01 start → none -->
+        <path d="M 80 182 V 512 Q 80 520 88 520 H 200" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 02 anchored → outlier -->
+        <path d="M 280 216 V 352 Q 280 360 288 360 H 480" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 03 outlier self-loop -->
+        <path d="M 520 320 V 296 Q 520 288 528 288 H 552 Q 560 288 560 296 V 320" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 06 PLACED → outlier (grouped revert) -->
+        <line x1="600" y1="244" x2="600" y2="320" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 04 outlier → verified (optional, --audio) -->
+        <path d="M 640 344 H 792 Q 800 344 800 336 V 216" fill="none" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <!-- 05 outlier → rescued -->
+        <path d="M 640 376 H 1000 Q 1008 376 1008 368 V 216" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 03 none → interpolated -->
+        <line x1="360" y1="520" x2="480" y2="520" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 05 interpolated → rescued -->
+        <path d="M 640 520 H 1064 Q 1072 520 1072 512 V 216" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+        <!-- 07 → end -->
+        <line x1="1144" y1="614" x2="1208" y2="614" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+        <!-- ============ Transition labels (masked, 8px gap) ============ -->
+        <g font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">
+          <!-- 01 anchored: segment y=176, mask 152–168 -->
+          <rect x="112" y="152" width="64" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="144" y="164.5" fill="#4f5d75">01 有匹配</text>
+          <!-- 01 none: vertical x=80, mask to the right 88–152 -->
+          <rect x="88" y="336" width="64" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="120" y="348.5" fill="#4f5d75">01 无匹配</text>
+          <!-- 02: segment y=360, mask 336–352 -->
+          <rect x="336" y="336" width="96" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="384" y="348.5" fill="#4f5d75">02 偏离 &gt;1.0s</text>
+          <!-- 03 self-loop: top y=288, mask 264–280 -->
+          <rect x="496" y="264" width="88" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="540" y="276.5" fill="#4f5d75">03 时间改为插值</text>
+          <!-- 06: vertical x=600, mask to the right 608–688 -->
+          <rect x="608" y="272" width="80" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="648" y="284.5" fill="#4f5d75">06 乱序 &gt;1s</text>
+          <!-- 04: segment y=344, mask 320–336 -->
+          <rect x="676" y="320" width="80" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="716" y="332.5" fill="#4f5d75">04 音频更优</text>
+          <!-- 05 outlier: segment y=376, mask 352–368 -->
+          <rect x="876" y="352" width="104" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="928" y="364.5" fill="#4f5d75">05 模糊匹配 ≥85</text>
+          <!-- 03 none → interpolated: segment y=520, mask 496–512 -->
+          <rect x="392" y="496" width="56" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="420" y="508.5" fill="#4f5d75">03 插值</text>
+          <!-- 05 interpolated: segment y=520, mask 496–512 -->
+          <rect x="812" y="496" width="80" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="852" y="508.5" fill="#4f5d75">05 模糊匹配</text>
+          <!-- → end: segment y=614, mask 590–606 -->
+          <rect x="1148" y="590" width="56" height="16" rx="2" fill="#f5f5f5"/>
+          <text x="1176" y="602.5" fill="#4f5d75">写出 SRT</text>
+        </g>
+
+        <!-- ============ Start / end ============ -->
+        <text x="80" y="140" fill="#7a8399" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle">align_words</text>
+        <circle cx="80" cy="176" r="6" fill="#2d3142"/>
+        <circle cx="1216" cy="614" r="8" fill="none" stroke="#2d3142" stroke-width="1"/>
+        <circle cx="1216" cy="614" r="5" fill="#2d3142"/>
+
+        <!-- ============ States ============ -->
+        <!-- anchored -->
+        <rect x="200" y="136" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="200" y="136" width="160" height="80" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="208" y="144" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="228" y="153" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="280" y="172" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">anchored</text>
+        <text x="280" y="190" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">由匹配词定时</text>
+        <text x="280" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 1105</text>
+
+        <!-- verified (optional: only with --audio) -->
+        <rect x="720" y="136" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="720" y="136" width="160" height="80" rx="8" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.45)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="728" y="144" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="748" y="153" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="800" y="172" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">verified</text>
+        <text x="800" y="190" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">音频确认 WhisperX</text>
+        <text x="800" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 6 · --audio</text>
+
+        <!-- rescued -->
+        <rect x="960" y="136" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="960" y="136" width="160" height="80" rx="8" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <rect x="968" y="144" width="40" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
+        <text x="988" y="153" fill="#2d3142" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="1040" y="172" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">rescued</text>
+        <text x="1040" y="190" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">局部模糊搜索找回</text>
+        <text x="1040" y="206" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 21</text>
+
+        <!-- outlier (focal) -->
+        <rect x="480" y="320" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="480" y="320" width="160" height="80" rx="8" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+        <rect x="488" y="328" width="40" height="12" rx="2" fill="transparent" stroke="rgba(235,108,54,0.50)" stroke-width="0.8"/>
+        <text x="508" y="337" fill="#eb6c36" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="560" y="356" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">outlier</text>
+        <text x="560" y="374" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">被拒，时间用插值</text>
+        <text x="560" y="390" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 86</text>
+
+        <!-- none -->
+        <rect x="200" y="480" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="200" y="480" width="160" height="80" rx="8" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="208" y="488" width="40" height="12" rx="2" fill="transparent" stroke="rgba(79,93,117,0.50)" stroke-width="0.8"/>
+        <text x="228" y="497" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="280" y="516" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">none</text>
+        <text x="280" y="534" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">没有词匹配上</text>
+        <text x="280" y="550" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 0 (178 after 01)</text>
+
+        <!-- interpolated -->
+        <rect x="480" y="480" width="160" height="80" rx="8" fill="#f5f5f5"/>
+        <rect x="480" y="480" width="160" height="80" rx="8" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="488" y="488" width="40" height="12" rx="2" fill="transparent" stroke="rgba(79,93,117,0.50)" stroke-width="0.8"/>
+        <text x="508" y="497" fill="#4f5d75" font-size="7" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.08em">STATE</text>
+        <text x="560" y="516" fill="#2d3142" font-size="14" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">interpolated</text>
+        <text x="560" y="534" fill="#4f5d75" font-size="12" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">原时间 + 局部中位偏移</text>
+        <text x="560" y="550" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">n = 173</text>
+
+        <!-- ============ Legend strip ============ -->
+        <line x1="40" y1="656" x2="1240" y2="656" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <text x="40" y="688" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.14em">LEGEND</text>
+        <g font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" fill="#4f5d75">
+          <circle cx="124" cy="684" r="5" fill="#2d3142"/>
+          <text x="136" y="688">起点</text>
+          <circle cx="196" cy="684" r="7" fill="none" stroke="#2d3142" stroke-width="1"/>
+          <circle cx="196" cy="684" r="4" fill="#2d3142"/>
+          <text x="210" y="688">终点</text>
+          <line x1="268" y1="684" x2="300" y2="684" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <text x="308" y="688">步号 + 条件</text>
+          <line x1="412" y1="684" x2="444" y2="684" stroke="#4f5d75" stroke-width="1.2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+          <text x="452" y="688">仅在 --audio 时</text>
+          <rect x="580" y="677" width="16" height="14" rx="3" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
+          <text x="604" y="688">outlier：被降级、再被找回的枢纽</text>
+          <rect x="836" y="677" width="16" height="14" rx="3" fill="rgba(45,49,66,0.05)" stroke="#4f5d75" stroke-width="1"/>
+          <text x="860" y="688">时间非 WhisperX</text>
+          <text x="1240" y="688" text-anchor="end" font-family="'Geist Mono', monospace" font-size="9" font-weight="400">n = dog-man-2025 final counts</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>
