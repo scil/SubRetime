@@ -13,7 +13,7 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else "lab/docs/diagrams/cue-flowchart.htm
 
 PAPER, INK, MUTED, SOFT = "#f5f5f5", "#2d3142", "#4f5d75", "#7a8399"
 ACC, ACC_T = "#eb6c36", "rgba(235,108,54,0.08)"
-FS = "'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+FS = "'Geist', sans-serif"
 FM = "'Geist Mono', ui-monospace, monospace"
 
 # status lanes (columns): order chosen so every step's inputs/outputs are contiguous
@@ -120,20 +120,20 @@ CH = lambda k: B[k] + 72                          # chip row after step k
 # start
 SX = (L + RGT) // 2
 nodes.append(f'<rect x="{SX - 120}" y="40" width="240" height="48" rx="24" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>')
-nodes.append(f'<text x="{SX}" y="61" fill="{INK}" font-size="12" font-weight="600" font-family="{FS}" text-anchor="middle">原始字幕 1391 条 cue</text>')
+nodes.append(f'<text x="{SX}" y="61" fill="{INK}" font-size="12" font-weight="600" font-family="{FS}" text-anchor="middle">Original subtitles · 1391 cues</text>')
 nodes.append(f'<text x="{SX}" y="76" fill="{SOFT}" font-size="9" font-family="{FM}" text-anchor="middle">words aligned (align_words)</text>')
 down(SX, 88, B[1], 1391)
 count_label(SX, 100, "1391")
 
 # 01
-box(L, RGT, B[1], "01", "逐条定时", "time_cues · matched words → anchored, else none")
+box(L, RGT, B[1], "01", "Match & time", "time_cues · matched words → anchored, else none")
 for x, st, n in [(A, "anchored", 1213), (N, "none", 178)]:
     down(x, B[1] + 48, CH(1), n)
     chip(x, CH(1), st, n)
 check("01", {"anchored": 1213, "none": 178})
 
 # 02  (anchored only)
-box(L, O + 64, B[2], "02", "剔除离群", "reject_outliers · |Δ − median(±8)| > 1.5 / 1.0 s")
+box(L, O + 64, B[2], "02", "Reject outliers", "reject_outliers · |Δ − median(±8)| > 1.5 / 1.0 s")
 down(A, CH(1) + CHIP_H, B[2], 1213)
 down(A, B[2] + 48, CH(2), 1105); chip(A, CH(2), "anchored", 1105)
 down(O, B[2] + 48, CH(2), 108, accent=True); chip(O, CH(2), "outlier", 108, accent=True)
@@ -143,9 +143,9 @@ assert 1105 + 108 == 1213
 check("02", {"anchored": 1105, "outlier": 108, "none": 178})
 
 # 03  (none, outlier)
-box(O - 64, RGT, B[3], "03", "插值补时", "interpolate_missing · orig + median Δ · outlier keeps label")
+box(O - 64, RGT, B[3], "03", "Interpolate", "interpolate_missing · orig + median Δ · outlier keeps label")
 down(O, CH(2) + CHIP_H, B[3], 108)
-OUTLIER_NOTE = "状态不变 · 时间改为插值"
+OUTLIER_NOTE = "time re-set only"
 down(O, B[3] + 48, CH(3), 108); chip(O, CH(3), "outlier", 108, note=OUTLIER_NOTE)
 down(I, B[3] + 48, CH(3), 178); chip(I, CH(3), "interpolated", 178)
 down(A, CH(2) + CHIP_H, B[6], 1105)                      # anchored passes 03 04 05
@@ -153,7 +153,7 @@ count_label(A, B[4] + 24, "1105")
 check("03", {"anchored": 1105, "outlier": 108, "interpolated": 178})
 
 # 04  (outlier, optional)
-box(V - 64, O + 64, B[4], "04", "音频复核（仅 --audio）", "verify_with_audio · outlier ≥3 words · wins by ≥0.05", optional=True)
+box(V - 64, O + 64, B[4], "04", "Audio check (--audio only)", "verify_with_audio · outlier ≥3 words · wins by ≥0.05", optional=True)
 down(O, CH(3) + chip_h(OUTLIER_NOTE), B[4], 108, dashed=True)
 down(V, B[4] + 48, CH(4), 9, dashed=True); chip(V, CH(4), "verified", 9)
 down(O, B[4] + 48, CH(4), 99, dashed=True); chip(O, CH(4), "outlier", 99)
@@ -163,7 +163,7 @@ assert 9 + 99 == 108
 check("04", {"anchored": 1105, "verified": 9, "outlier": 99, "interpolated": 178})
 
 # 05  (outlier, interpolated)
-box(R - 64, I + 64, B[5], "05", "局部搜救", "rescue_local · fuzzy ±1.5 s ≥85 · 16 outlier + 5 interp.")
+box(R - 64, I + 64, B[5], "05", "Local rescue", "rescue_local · fuzzy ±1.5 s ≥85 · 16 outlier + 5 interp.")
 down(O, CH(4) + CHIP_H, B[5], 99)
 down(R, B[5] + 48, CH(5), 21); chip(R, CH(5), "rescued", 21)
 down(O, B[5] + 48, CH(5), 83); chip(O, CH(5), "outlier", 83)
@@ -174,7 +174,7 @@ assert 21 + 83 + 173 == 99 + 178
 check("05", {"anchored": 1105, "verified": 9, "rescued": 21, "outlier": 83, "interpolated": 173})
 
 # 06  (PLACED: anchored, verified, rescued)
-box(L, R + 64, B[6], "06", "乱序回退", "revert_out_of_order · > 1 s out of order → outlier")
+box(L, R + 64, B[6], "06", "Revert order", "revert_out_of_order · > 1 s out of order → outlier")
 down(R, CH(5) + CHIP_H, B[6], 21)
 for x, st, n in [(A, "anchored", 1105), (V, "verified", 6), (R, "rescued", 21)]:
     down(x, B[6] + 48, CH(6), n)
@@ -192,7 +192,7 @@ assert 1105 + 6 + 21 + 3 == 1105 + 9 + 21
 check("06", {"anchored": 1105, "verified": 6, "rescued": 21, "outlier": 86, "interpolated": 173})
 
 # 07  (all)
-box(L, RGT, B[7], "07", "收尾定时（状态不变）", "finalize_timing · gap 0.084 s · 17 chars/s · 0.8–7 s · ≤0.5 s earlier")
+box(L, RGT, B[7], "07", "Finalize timing (status unchanged)", "finalize_timing · gap 0.084 s · 17 chars/s · 0.8–7 s · ≤0.5 s earlier")
 for x in (A, V, R):
     pass
 down(A, CH(6) + CHIP_H, B[7], 1105)
@@ -224,24 +224,24 @@ def ltext(x, t, mono=False):
 
 x = 40
 leg.append(f'<rect x="{x}" y="{iy - 7}" width="28" height="14" rx="6" fill="rgba(79,93,117,0.10)" stroke="{SOFT}" stroke-width="0.8"/>')
-x = ltext(x + 36, "状态 + 条数") + 20
+x = ltext(x + 36, "status + count") + 20
 leg.append(f'<rect x="{x}" y="{iy - 6}" width="24" height="12" rx="2" fill="#ffffff" stroke="{INK}" stroke-width="1"/>')
-x = ltext(x + 32, "步骤") + 20
+x = ltext(x + 32, "step") + 20
 leg.append(f'<rect x="{x}" y="{iy - 6}" width="24" height="12" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>')
-x = ltext(x + 32, "可选 --audio") + 20
-x = ltext(x, "线宽") + 8
+x = ltext(x + 32, "optional --audio") + 20
+x = ltext(x, "line width") + 8
 for wv, t in [(3, "≥1000"), (2, "100–999"), (1.2, "<100")]:
     leg.append(f'<line x1="{x}" y1="{iy}" x2="{x + 20}" y2="{iy}" stroke="{MUTED}" stroke-width="{wv}"/>')
     x = ltext(x + 26, t, mono=True) + 12
 x += 8
 leg.append(f'<line x1="{x}" y1="{iy}" x2="{x + 20}" y2="{iy}" stroke="{ACC}" stroke-width="2" marker-end="url(#arrow-accent)"/>')
-x = ltext(x + 30, "outlier 去向")
+x = ltext(x + 30, "outlier path")
 assert x < RGT, x
 
-TITLE = "数据流向：1391 条字幕如何流过七步"
-DESC = ("流程图：dog-man-2025 的 1391 条 cue 按状态分列，每个状态直接连到处理它的步骤，"
-        "步骤不处理的状态直线绕过；每一步前后合计 1391 条，最终为 anchored 1105、verified 6、"
-        "rescued 21、outlier 86、interpolated 173。")
+TITLE = "Data flow: how 1391 cues move through seven steps"
+DESC = ("Flowchart: dog-man-2025's 1391 cues in one column per status; each status connects straight to "
+        "the step that processes it and passes by the others; every step keeps 1391 cues in total, ending "
+        "with anchored 1105, verified 6, rescued 21, outlier 86 and interpolated 173.")
 
 body = "\n        ".join(["<!-- ===== Arrows (drawn first) ===== -->"] + arrows +
                         ["<!-- ===== Count labels ===== -->"] + labels +
@@ -249,12 +249,12 @@ body = "\n        ".join(["<!-- ===== Arrows (drawn first) ===== -->"] + arrows 
                         ["<!-- ===== Legend ===== -->"] + leg)
 
 html = f"""<!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{TITLE}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after {{ box-sizing: border-box; margin: 0; padding: 0; }}
     :root {{
@@ -263,8 +263,8 @@ html = f"""<!DOCTYPE html>
       --color-muted:   #4f5d75;
       --color-soft:    #7a8399;
       --color-accent:  #eb6c36;
-      --font-sans:     'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif SC', 'Songti SC', serif;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
       --font-mono:     'Geist Mono', ui-monospace, monospace;
     }}
 
@@ -340,7 +340,7 @@ html = f"""<!DOCTYPE html>
       </svg>
     </div>
 
-    <p class="note">数字取自 dog-man-2025（1391 条 cue，带 <code>--audio</code> 运行）。每一列是一种状态：箭头进入的步骤处理该状态，步骤没有覆盖的列直线绕过，所以每一步前后合计都是 1391 条。<strong>被 02 降级的 108 条 outlier</strong>：16 条被 05 局部搜救找回，6 条经 04 音频复核保住，其余 86 条以 outlier 收尾（含 06 退回的 3 条 verified）。PLACED = <code>anchored</code>、<code>verified</code>、<code>rescued</code>。04 只在给出 <code>--audio</code> 时运行，且只复核至少 3 个词的 outlier；06 把越界的 PLACED cue 改回 <code>outlier</code> 并立即重新插值。07 只调时间、不改状态。</p>
+    <p class="note">Counts from dog-man-2025 (1391 cues, run with <code>--audio</code>). Each column is one status: a step processes the statuses its box spans and the others pass straight by, so every step keeps 1391 cues in total. <strong>The 108 outliers demoted by 02</strong>: 05 rescues 16, 04's audio check keeps 6, and the other 86 end as outlier (including the 3 verified cues 06 sends back). PLACED = <code>anchored</code>, <code>verified</code>, <code>rescued</code>. 04 runs only with <code>--audio</code> and only checks outliers of at least 3 words; 06 turns out-of-order PLACED cues back into <code>outlier</code> and re-interpolates them at once. 07 changes timing only, never status.</p>
   </div>
 </body>
 </html>

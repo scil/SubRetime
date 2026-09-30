@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数据流向：1391 条字幕如何流过七步</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+  <title>Data flow: how 1391 cues move through seven steps</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -13,8 +13,8 @@
       --color-muted:   #4f5d75;
       --color-soft:    #7a8399;
       --color-accent:  #eb6c36;
-      --font-sans:     'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif SC', 'Songti SC', serif;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', serif;
       --font-mono:     'Geist Mono', ui-monospace, monospace;
     }
 
@@ -71,12 +71,12 @@
 <body>
   <div class="frame">
     <p class="eyebrow">Flowchart · align_srt.py · dog-man-2025</p>
-    <h1>数据流向：1391 条字幕如何流过七步</h1>
+    <h1>Data flow: how 1391 cues move through seven steps</h1>
 
     <div class="diagram-container">
       <svg viewBox="0 0 928 1120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-flowchart-title cue-flowchart-desc">
-        <title id="cue-flowchart-title">数据流向：1391 条字幕如何流过七步</title>
-        <desc id="cue-flowchart-desc">流程图：dog-man-2025 的 1391 条 cue 按状态分列，每个状态直接连到处理它的步骤，步骤不处理的状态直线绕过；每一步前后合计 1391 条，最终为 anchored 1105、verified 6、rescued 21、outlier 86、interpolated 173。</desc>
+        <title id="cue-flowchart-title">Data flow: how 1391 cues move through seven steps</title>
+        <desc id="cue-flowchart-desc">Flowchart: dog-man-2025's 1391 cues in one column per status; each status connects straight to the step that processes it and passes by the others; every step keeps 1391 cues in total, ending with anchored 1105, verified 6, rescued 21, outlier 86 and interpolated 173.</desc>
         <defs>
           <marker id="arrow" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
           <marker id="arrow-lg" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#4f5d75"/></marker>
@@ -141,13 +141,13 @@
         <text x="702" y="799" fill="#4f5d75" font-size="8" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">173</text>
         <!-- ===== Nodes ===== -->
         <rect x="344" y="40" width="240" height="48" rx="24" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-        <text x="464" y="61" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">原始字幕 1391 条 cue</text>
+        <text x="464" y="61" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Original subtitles · 1391 cues</text>
         <text x="464" y="76" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">words aligned (align_words)</text>
         <rect x="40" y="112" width="848" height="48" rx="6" fill="#f5f5f5"/>
         <rect x="40" y="112" width="848" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="48" y="118" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="60" y="127" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">01</text>
-        <text x="464" y="133" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">逐条定时</text>
+        <text x="464" y="133" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Match & time</text>
         <text x="464" y="149" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">time_cues · matched words → anchored, else none</text>
         <rect x="48" y="184" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="104" y="201" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">anchored <tspan font-weight="600" fill="#2d3142">1213</tspan></text>
@@ -157,7 +157,7 @@
         <rect x="40" y="244" width="560" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="48" y="250" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="60" y="259" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">02</text>
-        <text x="320" y="265" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">剔除离群</text>
+        <text x="320" y="265" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Reject outliers</text>
         <text x="320" y="281" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">reject_outliers · |Δ − median(±8)| > 1.5 / 1.0 s</text>
         <rect x="48" y="316" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="104" y="333" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">anchored <tspan font-weight="600" fill="#2d3142">1105</tspan></text>
@@ -168,18 +168,18 @@
         <rect x="472" y="376" width="416" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="480" y="382" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="492" y="391" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">03</text>
-        <text x="680" y="397" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">插值补时</text>
+        <text x="680" y="397" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Interpolate</text>
         <text x="680" y="413" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">interpolate_missing · orig + median Δ · outlier keeps label</text>
         <rect x="480" y="448" width="112" height="40" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="536" y="465" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">outlier <tspan font-weight="600" fill="#2d3142">108</tspan></text>
-        <text x="536" y="479" fill="#4f5d75" font-size="8" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">状态不变 · 时间改为插值</text>
+        <text x="536" y="479" fill="#4f5d75" font-size="8" font-family="'Geist', sans-serif" text-anchor="middle">time re-set only</text>
         <rect x="624" y="448" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="680" y="465" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">interpolated <tspan font-weight="600" fill="#2d3142">178</tspan></text>
         <rect x="184" y="508" width="416" height="48" rx="6" fill="#f5f5f5"/>
         <rect x="184" y="508" width="416" height="48" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
         <rect x="192" y="514" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="204" y="523" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">04</text>
-        <text x="392" y="529" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">音频复核（仅 --audio）</text>
+        <text x="392" y="529" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Audio check (--audio only)</text>
         <text x="392" y="545" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">verify_with_audio · outlier ≥3 words · wins by ≥0.05</text>
         <rect x="192" y="580" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="248" y="597" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">verified <tspan font-weight="600" fill="#2d3142">9</tspan></text>
@@ -189,7 +189,7 @@
         <rect x="328" y="640" width="416" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="336" y="646" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="348" y="655" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">05</text>
-        <text x="536" y="661" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">局部搜救</text>
+        <text x="536" y="661" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Local rescue</text>
         <text x="536" y="677" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">rescue_local · fuzzy ±1.5 s ≥85 · 16 outlier + 5 interp.</text>
         <rect x="336" y="712" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="392" y="729" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">rescued <tspan font-weight="600" fill="#2d3142">21</tspan></text>
@@ -201,7 +201,7 @@
         <rect x="40" y="772" width="416" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="48" y="778" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="60" y="787" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">06</text>
-        <text x="248" y="793" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">乱序回退</text>
+        <text x="248" y="793" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Revert order</text>
         <text x="248" y="809" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">revert_out_of_order · > 1 s out of order → outlier</text>
         <rect x="48" y="844" width="112" height="28" rx="8" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
         <text x="104" y="861" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">anchored <tspan font-weight="600" fill="#2d3142">1105</tspan></text>
@@ -213,50 +213,50 @@
         <rect x="40" y="904" width="848" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
         <rect x="48" y="910" width="24" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.40)" stroke-width="0.8"/>
         <text x="60" y="919" fill="#4f5d75" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">07</text>
-        <text x="464" y="925" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">收尾定时（状态不变）</text>
+        <text x="464" y="925" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Finalize timing (status unchanged)</text>
         <text x="464" y="941" fill="#7a8399" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">finalize_timing · gap 0.084 s · 17 chars/s · 0.8–7 s · ≤0.5 s earlier</text>
         <rect x="48" y="976" width="112" height="44" rx="22" fill="#f5f5f5"/>
         <rect x="48" y="976" width="112" height="44" rx="22" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-        <text x="104" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">1105</text>
+        <text x="104" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">1105</text>
         <text x="104" y="1010" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">anchored</text>
         <rect x="192" y="976" width="112" height="44" rx="22" fill="#f5f5f5"/>
         <rect x="192" y="976" width="112" height="44" rx="22" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-        <text x="248" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">6</text>
+        <text x="248" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">6</text>
         <text x="248" y="1010" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">verified</text>
         <rect x="336" y="976" width="112" height="44" rx="22" fill="#f5f5f5"/>
         <rect x="336" y="976" width="112" height="44" rx="22" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-        <text x="392" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">21</text>
+        <text x="392" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">21</text>
         <text x="392" y="1010" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">rescued</text>
         <rect x="480" y="976" width="112" height="44" rx="22" fill="#f5f5f5"/>
         <rect x="480" y="976" width="112" height="44" rx="22" fill="rgba(235,108,54,0.08)" stroke="#eb6c36" stroke-width="1"/>
-        <text x="536" y="996" fill="#eb6c36" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">86</text>
+        <text x="536" y="996" fill="#eb6c36" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">86</text>
         <text x="536" y="1010" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">outlier</text>
         <rect x="624" y="976" width="112" height="44" rx="22" fill="#f5f5f5"/>
         <rect x="624" y="976" width="112" height="44" rx="22" fill="rgba(45,49,66,0.03)" stroke="rgba(45,49,66,0.30)" stroke-width="1"/>
-        <text x="680" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">173</text>
+        <text x="680" y="996" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">173</text>
         <text x="680" y="1010" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">interpolated</text>
         <!-- ===== Legend ===== -->
         <line x1="40" y1="1048" x2="888" y2="1048" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
         <text x="40" y="1068" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.18em">LEGEND</text>
         <rect x="40" y="1085" width="28" height="14" rx="6" fill="rgba(79,93,117,0.10)" stroke="#7a8399" stroke-width="0.8"/>
-        <text x="76" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">状态 + 条数</text>
-        <rect x="165.6" y="1086" width="24" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-        <text x="197.6" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">步骤</text>
-        <rect x="241.6" y="1086" width="24" height="12" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
-        <text x="273.6" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">可选 --audio</text>
-        <text x="375.20000000000005" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">线宽</text>
-        <line x1="407.20000000000005" y1="1092" x2="427.20000000000005" y2="1092" stroke="#4f5d75" stroke-width="3"/>
-        <text x="433.20000000000005" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">≥1000</text>
-        <line x1="473.1" y1="1092" x2="493.1" y2="1092" stroke="#4f5d75" stroke-width="2"/>
-        <text x="499.1" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">100–999</text>
-        <line x1="550.1600000000001" y1="1092" x2="570.1600000000001" y2="1092" stroke="#4f5d75" stroke-width="1.2"/>
-        <text x="576.1600000000001" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace"><100</text>
-        <line x1="618.4800000000001" y1="1092" x2="638.4800000000001" y2="1092" stroke="#eb6c36" stroke-width="2" marker-end="url(#arrow-accent)"/>
-        <text x="648.4800000000001" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">outlier 去向</text>
+        <text x="76" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">status + count</text>
+        <rect x="196.79999999999998" y="1086" width="24" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+        <text x="228.79999999999998" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">step</text>
+        <rect x="277.59999999999997" y="1086" width="24" height="12" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="309.59999999999997" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">optional --audio</text>
+        <text x="444.79999999999995" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">line width</text>
+        <line x1="524.8" y1="1092" x2="544.8" y2="1092" stroke="#4f5d75" stroke-width="3"/>
+        <text x="550.8" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">≥1000</text>
+        <line x1="590.6999999999999" y1="1092" x2="610.6999999999999" y2="1092" stroke="#4f5d75" stroke-width="2"/>
+        <text x="616.6999999999999" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">100–999</text>
+        <line x1="667.76" y1="1092" x2="687.76" y2="1092" stroke="#4f5d75" stroke-width="1.2"/>
+        <text x="693.76" y="1096" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace"><100</text>
+        <line x1="736.08" y1="1092" x2="756.08" y2="1092" stroke="#eb6c36" stroke-width="2" marker-end="url(#arrow-accent)"/>
+        <text x="766.08" y="1096" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">outlier path</text>
       </svg>
     </div>
 
-    <p class="note">数字取自 dog-man-2025（1391 条 cue，带 <code>--audio</code> 运行）。每一列是一种状态：箭头进入的步骤处理该状态，步骤没有覆盖的列直线绕过，所以每一步前后合计都是 1391 条。<strong>被 02 降级的 108 条 outlier</strong>：16 条被 05 局部搜救找回，6 条经 04 音频复核保住，其余 86 条以 outlier 收尾（含 06 退回的 3 条 verified）。PLACED = <code>anchored</code>、<code>verified</code>、<code>rescued</code>。04 只在给出 <code>--audio</code> 时运行，且只复核至少 3 个词的 outlier；06 把越界的 PLACED cue 改回 <code>outlier</code> 并立即重新插值。07 只调时间、不改状态。</p>
+    <p class="note">Counts from dog-man-2025 (1391 cues, run with <code>--audio</code>). Each column is one status: a step processes the statuses its box spans and the others pass straight by, so every step keeps 1391 cues in total. <strong>The 108 outliers demoted by 02</strong>: 05 rescues 16, 04's audio check keeps 6, and the other 86 end as outlier (including the 3 verified cues 06 sends back). PLACED = <code>anchored</code>, <code>verified</code>, <code>rescued</code>. 04 runs only with <code>--audio</code> and only checks outliers of at least 3 words; 06 turns out-of-order PLACED cues back into <code>outlier</code> and re-interpolates them at once. 07 changes timing only, never status.</p>
   </div>
 </body>
 </html>

@@ -47,7 +47,7 @@ grammar for this case, and relaxes its 9-node budget.
    columns. Give each step box a number tag, a short name and a mono rule line
    (the threshold that decides it). When a step changes records but keeps
    their status, give that chip a second line naming the change
-   (`chip(..., note=...)`, e.g. 03's outlier: 状态不变 · 时间改为插值);
+   (`chip(..., note=...)`, e.g. 03's outlier: "time re-set only");
    otherwise it matches the chip above and the step reads as a pass-by.
 4. **Draw the flows.** Every edge is vertical within its column. Stroke width
    encodes count in three tiers (≥1000 / 100–999 / <100: 3 / 2 / 1.2 px),

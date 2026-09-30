@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>七步 × 状态 · Swimlane</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400&display=swap" rel="stylesheet">
+  <title>Seven Steps × Status</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -13,8 +13,8 @@
       --color-muted:   #4f5d75;
       --color-soft:    #7a8399;
       --color-accent:  #eb6c36;
-      --font-sans:     'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
-      --font-serif:    'Instrument Serif', 'Noto Serif', 'Noto Serif SC', 'Songti SC', serif;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', serif;
       --font-mono:     'Geist Mono', ui-monospace, monospace;
     }
 
@@ -70,12 +70,12 @@
 <body>
   <div class="frame">
     <p class="eyebrow">Swimlane · align_srt.py</p>
-    <h1>七步 × 状态：哪一步处理、哪一步绕过</h1>
+    <h1>Seven steps × status: which step acts, which passes by</h1>
 
     <div class="diagram-container">
       <svg viewBox="0 0 1280 760" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-steps-swimlane-title cue-steps-swimlane-desc">
-        <title id="cue-steps-swimlane-title">七步 × 状态：哪一步处理、哪一步绕过</title>
-        <desc id="cue-steps-swimlane-desc">泳道图：align_subtitles 的七个步骤按顺序横向排列，六条泳道各是一种 cue 状态，标出每一步处理哪些状态、哪些状态原样绕过，以及各步造成的状态转换。</desc>
+        <title id="cue-steps-swimlane-title">Seven steps × status: which step acts, which passes by</title>
+        <desc id="cue-steps-swimlane-desc">Swimlane: the seven steps of align_subtitles run left to right in order, and each of the six lanes is one cue status. It marks which statuses each step acts on, which pass by unchanged, and the status changes each step causes.</desc>
         <defs>
           <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
           <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
@@ -124,13 +124,13 @@
           <text x="52" y="509" fill="#2d3142">interpolated</text>
           <text x="52" y="605" fill="#2d3142">none</text>
         </g>
-        <g font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="500" fill="#4f5d75">
-          <text x="52" y="143">匹配词定时</text>
-          <text x="52" y="239">离群，改用插值</text>
-          <text x="52" y="335">音频复核后恢复</text>
-          <text x="52" y="431">局部搜救找回</text>
-          <text x="52" y="527">插值定位</text>
-          <text x="52" y="623">未匹配</text>
+        <g font-family="'Geist', sans-serif" font-size="12" font-weight="500" fill="#4f5d75">
+          <text x="52" y="143">matched &amp; timed</text>
+          <text x="52" y="239">interpolated instead</text>
+          <text x="52" y="335">restored by audio</text>
+          <text x="52" y="431">found by rescue</text>
+          <text x="52" y="527">time interpolated</text>
+          <text x="52" y="623">unmatched</text>
         </g>
 
         <!-- ===== Pass-through lines (cue carried along its lane) ===== -->
@@ -206,7 +206,7 @@
         <!-- ===== Spanning blocks: 01 and 07 act on every cue ===== -->
         <rect x="192" y="88" width="120" height="560" rx="6" fill="#f5f5f5"/>
         <rect x="192" y="88" width="120" height="560" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-        <text x="252" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">逐条定时</text>
+        <text x="252" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Match &amp; time</text>
         <g font-family="'Geist Mono', monospace" font-size="9" fill="#4f5d75" text-anchor="middle">
           <text x="252" y="131">anchored 1213</text>
           <text x="252" y="611">none 178</text>
@@ -214,7 +214,7 @@
 
         <rect x="1080" y="88" width="120" height="560" rx="6" fill="#f5f5f5"/>
         <rect x="1080" y="88" width="120" height="560" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-        <text x="1140" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" text-anchor="middle">收尾定时</text>
+        <text x="1140" y="108" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Finalize timing</text>
         <g font-family="'Geist Mono', monospace" font-size="9" fill="#4f5d75" text-anchor="middle">
           <text x="1140" y="131">anchored 1105</text>
           <text x="1140" y="227">outlier 86</text>
@@ -238,38 +238,38 @@
         </g>
 
         <!-- ===== Step nodes: a step acts on this lane ===== -->
-        <g font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="600" fill="#2d3142" text-anchor="middle">
+        <g font-family="'Geist', sans-serif" font-size="12" font-weight="600" fill="#2d3142" text-anchor="middle">
           <!-- anchored · 02 -->
           <rect x="340" y="104" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="400" y="125">剔除离群</text>
+          <text x="400" y="125">Reject outliers</text>
           <!-- anchored · 06 -->
           <rect x="932" y="104" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="992" y="125">乱序回退</text>
+          <text x="992" y="125">Revert order</text>
           <!-- outlier · 03 -->
           <rect x="488" y="200" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="548" y="221">插值补时</text>
+          <text x="548" y="221">Interpolate</text>
           <!-- outlier · 04 (optional) -->
           <rect x="636" y="200" width="120" height="48" rx="6" fill="#f5f5f5"/>
           <rect x="636" y="200" width="120" height="48" rx="6" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="696" y="221">音频复核</text>
+          <text x="696" y="221">Audio check</text>
           <!-- outlier · 05 -->
           <rect x="784" y="200" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="844" y="221">局部搜救</text>
+          <text x="844" y="221">Local rescue</text>
           <!-- outlier · 06 -->
           <rect x="932" y="200" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="992" y="221">重新插值</text>
+          <text x="992" y="221">Re-interpolate</text>
           <!-- verified · 06 (narrow, leaves a lane for the rescued arrow) -->
           <rect x="932" y="296" width="88" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="976" y="317">乱序回退</text>
+          <text x="976" y="317">Revert order</text>
           <!-- rescued · 06 -->
           <rect x="932" y="392" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="992" y="413">乱序回退</text>
+          <text x="992" y="413">Revert order</text>
           <!-- interpolated · 05 -->
           <rect x="784" y="488" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="844" y="509">局部搜救</text>
+          <text x="844" y="509">Local rescue</text>
           <!-- none · 03 -->
           <rect x="488" y="584" width="120" height="48" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="548" y="605">插值补时</text>
+          <text x="548" y="605">Interpolate</text>
         </g>
         <g font-family="'Geist Mono', monospace" font-size="9" fill="#4f5d75" text-anchor="middle">
           <text x="400" y="141">|Δ−median| &gt; 1.5 s</text>
@@ -285,39 +285,39 @@
         </g>
 
         <!-- none lane ends after 03 -->
-        <text x="624" y="612" fill="#7a8399" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif">此后为 0 条</text>
+        <text x="624" y="612" fill="#7a8399" font-size="12" font-weight="500" font-family="'Geist', sans-serif">0 from here on</text>
 
         <!-- ===== Legend ===== -->
         <line x1="40" y1="676" x2="1240" y2="676" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
         <text x="40" y="696" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
 
-        <g font-family="'Geist', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif" font-size="12" font-weight="500" fill="#4f5d75">
+        <g font-family="'Geist', sans-serif" font-size="12" font-weight="500" fill="#4f5d75">
           <rect x="40" y="712" width="20" height="12" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="68" y="722">步骤处理该状态</text>
+          <text x="68" y="722">Step acts on status</text>
 
           <rect x="208" y="712" width="20" height="12" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>
-          <text x="236" y="722">可选步骤（--audio）</text>
+          <text x="236" y="722">Optional step (--audio)</text>
 
-          <rect x="400" y="712" width="20" height="12" rx="3" fill="#f5f5f5" stroke="#7a8399" stroke-width="0.8"/>
-          <text x="428" y="722">状态进入 +条数</text>
+          <rect x="392" y="712" width="20" height="12" rx="3" fill="#f5f5f5" stroke="#7a8399" stroke-width="0.8"/>
+          <text x="420" y="722">Status enters, +count</text>
 
           <line x1="568" y1="718" x2="596" y2="718" stroke="#7a8399" stroke-width="1"/>
           <circle cx="582" cy="718" r="4" fill="#f5f5f5" stroke="#7a8399" stroke-width="1"/>
-          <text x="604" y="722">绕过：原样通过</text>
+          <text x="604" y="722">Bypass: passes as-is</text>
 
-          <line x1="744" y1="718" x2="772" y2="718" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
-          <text x="780" y="722">状态改变</text>
+          <line x1="752" y1="718" x2="780" y2="718" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+          <text x="788" y="722">Status changes</text>
 
-          <rect x="880" y="708" width="12" height="20" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
-          <text x="900" y="722">作用于全部 cue</text>
+          <rect x="904" y="708" width="12" height="20" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+          <text x="924" y="722">Acts on every cue</text>
 
-          <rect x="1048" y="712" width="20" height="12" rx="2" fill="rgba(235,108,54,0.06)"/>
-          <text x="1076" y="722">焦点：outlier 泳道</text>
+          <rect x="1052" y="712" width="20" height="12" rx="2" fill="rgba(235,108,54,0.06)"/>
+          <text x="1080" y="722">Focus: outlier lane</text>
         </g>
       </svg>
     </div>
 
-    <p class="note">数字取自 dog-man-2025（1391 条 cue，带 <code>--audio</code> 运行）。07 <code>finalize_timing</code> 只调时间、不改状态：不重叠（间隔 0.084 s）、阅读速度 17 字/秒、时长 0.8–7 s、最多提前 0.5 s 开始。06 把越界的 PLACED cue（anchored、verified、rescued）改回 <code>outlier</code> 后立即重新插值。</p>
+    <p class="note">Counts are from dog-man-2025 (1391 cues, run with <code>--audio</code>). 07 <code>finalize_timing</code> adjusts times only and never changes a status: no overlaps (0.084 s gap), 17 characters/s reading speed, 0.8–7 s duration, and a start at most 0.5 s early. 06 turns out-of-order PLACED cues (anchored, verified, rescued) back into <code>outlier</code> and re-interpolates them right away.</p>
   </div>
 </body>
 </html>
