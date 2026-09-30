@@ -126,7 +126,7 @@ down(SX, 88, B[1], 1391)
 count_label(SX, 100, "1391")
 
 # 01
-box(L, RGT, B[1], "01", "Match & time", "time_cues · matched words → anchored, else none")
+box(L, RGT, B[1], "01", "Match &amp; time", "time_cues · matched words → anchored, else none")
 for x, st, n in [(A, "anchored", 1213), (N, "none", 178)]:
     down(x, B[1] + 48, CH(1), n)
     chip(x, CH(1), st, n)
@@ -230,7 +230,7 @@ x = ltext(x + 32, "step") + 20
 leg.append(f'<rect x="{x}" y="{iy - 6}" width="24" height="12" rx="2" fill="rgba(45,49,66,0.02)" stroke="rgba(45,49,66,0.40)" stroke-width="1" stroke-dasharray="4,3"/>')
 x = ltext(x + 32, "optional --audio") + 20
 x = ltext(x, "line width") + 8
-for wv, t in [(3, "≥1000"), (2, "100–999"), (1.2, "<100")]:
+for wv, t in [(3, "≥1000"), (2, "100–999"), (1.2, "&lt;100")]:
     leg.append(f'<line x1="{x}" y1="{iy}" x2="{x + 20}" y2="{iy}" stroke="{MUTED}" stroke-width="{wv}"/>')
     x = ltext(x + 26, t, mono=True) + 12
 x += 8

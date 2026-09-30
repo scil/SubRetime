@@ -1,79 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dog Man: how 1391 cues flow through seven steps</title>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --color-paper:   #f5f5f5;
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1120 1120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-status-sankey-title cue-status-sankey-desc" id="cue-status-sankey-root">
+  <defs>
+      <style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Noto+Serif:ital@0;1&amp;family=Noto+Sans+KR:wght@400;500;600&amp;family=Noto+Serif+KR:wght@400&amp;family=Noto+Sans+TC:wght@400;500;600&amp;family=Noto+Serif+TC:wght@400&amp;display=swap');
+      #cue-status-sankey-root { --color-paper:   #f5f5f5;
       --color-ink:     #2d3142;
       --color-muted:   #4f5d75;
       --color-accent:  #eb6c36;
       --font-sans:     'Geist', system-ui, sans-serif;
       --font-serif:    'Instrument Serif', serif;
-      --font-mono:     'Geist Mono', ui-monospace, monospace;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background: var(--color-paper);
-      color: var(--color-ink);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 3rem 2rem;
-    }
-
-    .frame { max-width: 1120px; width: 100%; min-width: 0; }
-    .diagram-container { width: 100%; overflow-x: auto; }
-
-    .eyebrow {
-      font-family: var(--font-mono);
-      font-size: 0.66rem;
-      font-weight: 500;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--color-muted);
-      margin-bottom: 0.5rem;
-    }
-
-    h1 {
-      font-family: var(--font-serif);
-      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
-      font-weight: 400;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-      color: var(--color-ink);
-      margin-bottom: 1.5rem;
-    }
-
-    .note {
-      margin-top: 0.4rem;
+      --font-mono:     'Geist Mono', ui-monospace, monospace; }
+      #cue-status-sankey-root { font-family: var(--font-sans); color: var(--color-ink); }
+      #cue-status-sankey-root .diagram-container { width: 100%; overflow-x: auto; }
+      #cue-status-sankey-root .note { margin-top: 0.4rem;
       font-size: 0.8rem;
       line-height: 1.6;
       color: var(--color-muted);
-      max-width: 1040px;
-    }
-    .note:first-of-type { margin-top: 1rem; }
-
-    svg { width: 100%; min-width: 1120px; display: block; }
-    @media print {
-      .diagram-container { overflow-x: visible; }
-      svg { min-width: 0; }
-    }
-  </style>
-</head>
-<body>
-  <div class="frame">
-    <p class="eyebrow">Sankey · dog-man-2025 · align_srt.py --audio</p>
-    <h1>Dog Man: how 1391 cues flow through seven steps</h1>
-
-    <div class="diagram-container">
-      <svg viewBox="0 0 1120 1120" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-status-sankey-title cue-status-sankey-desc">
+      max-width: 1040px; }
+      #cue-status-sankey-root .note:first-of-type { margin-top: 1rem; }
+      #cue-status-sankey-root .diagram-container { overflow-x: visible; }</style>
+  </defs>
         <title id="cue-status-sankey-title">Dog Man: how 1391 cues flow through seven steps</title>
         <desc id="cue-status-sankey-desc">Sankey, one column per step: dog-man-2025's 1391 cues are 1213 anchored and 178 none after 01; 02 demotes 108 to outlier, 03 only re-times them, 04 verifies 9, 05 rescues 16 of the remaining 99, 06 reverts 3, and 86 end as outlier; the outlier stream is highlighted in coral.</desc>
 
@@ -97,59 +42,59 @@
         <text x="966" y="90" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">STATUS UNCHANGED</text>
         <!-- Ribbons: calm pass-throughs first, status changes next, the outlier stream last -->
         <!-- 02: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M132,136 C196,136 196,136 260,136 L260,688.5 C196,688.5 196,688.5 132,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M132,136 C196,136 196,136 260,136 L260,688.5 C196,688.5 196,688.5 132,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 02: none -> none 178 cues, 89px -->
-        <path d="M132,908 C196,908 196,908 260,908 L260,997 C196,997 196,997 132,997 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M132,908 C196,908 196,908 260,908 L260,997 C196,997 196,997 132,997 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 03: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M272,136 C336,136 336,136 400,136 L400,688.5 C336,688.5 336,688.5 272,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M272,136 C336,136 336,136 400,136 L400,688.5 C336,688.5 336,688.5 272,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 04: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M412,136 C476,136 476,136 540,136 L540,688.5 C476,688.5 476,688.5 412,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M412,136 C476,136 476,136 540,136 L540,688.5 C476,688.5 476,688.5 412,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 04: interpolated -> interpolated 178 cues, 89px -->
-        <path d="M412,908 C476,908 476,908 540,908 L540,997 C476,997 476,997 412,997 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M412,908 C476,908 476,908 540,908 L540,997 C476,997 476,997 412,997 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 05: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M552,136 C616,136 616,136 680,136 L680,688.5 C616,688.5 616,688.5 552,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M552,136 C616,136 616,136 680,136 L680,688.5 C616,688.5 616,688.5 552,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 05: verified -> verified 9 cues, 8px -->
-        <path d="M552,728 C616,728 616,728 680,728 L680,736 C616,736 616,736 552,736 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M552,728 C616,728 616,728 680,728 L680,736 C616,736 616,736 552,736 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 05: interpolated -> interpolated 173 cues, 85px -->
-        <path d="M552,912 C616,912 616,908 680,908 L680,993 C616,993 616,997 552,997 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M552,912 C616,912 616,908 680,908 L680,993 C616,993 616,997 552,997 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 06: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M692,136 C756,136 756,136 820,136 L820,688.5 C756,688.5 756,688.5 692,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M692,136 C756,136 756,136 820,136 L820,688.5 C756,688.5 756,688.5 692,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 06: verified -> verified 6 cues, 4px -->
-        <path d="M692,728 C756,728 756,728 820,728 L820,732 C756,732 756,732 692,732 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M692,728 C756,728 756,728 820,728 L820,732 C756,732 756,732 692,732 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 06: rescued -> rescued 21 cues, 11.25px -->
-        <path d="M692,856 C756,856 756,856 820,856 L820,867.25 C756,867.25 756,867.25 692,867.25 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M692,856 C756,856 756,856 820,856 L820,867.25 C756,867.25 756,867.25 692,867.25 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 06: interpolated -> interpolated 173 cues, 85px -->
-        <path d="M692,908 C756,908 756,908 820,908 L820,993 C756,993 756,993 692,993 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M692,908 C756,908 756,908 820,908 L820,993 C756,993 756,993 692,993 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 07: anchored -> anchored 1105 cues, 552.5px -->
-        <path d="M832,136 C896,136 896,136 960,136 L960,688.5 C896,688.5 896,688.5 832,688.5 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M832,136 C896,136 896,136 960,136 L960,688.5 C896,688.5 896,688.5 832,688.5 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 07: verified -> verified 6 cues, 4px -->
-        <path d="M832,728 C896,728 896,728 960,728 L960,732 C896,732 896,732 832,732 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M832,728 C896,728 896,728 960,728 L960,732 C896,732 896,732 832,732 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 07: rescued -> rescued 21 cues, 11.25px -->
-        <path d="M832,856 C896,856 896,856 960,856 L960,867.25 C896,867.25 896,867.25 832,867.25 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M832,856 C896,856 896,856 960,856 L960,867.25 C896,867.25 896,867.25 832,867.25 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 07: interpolated -> interpolated 173 cues, 85px -->
-        <path d="M832,908 C896,908 896,908 960,908 L960,993 C896,993 896,993 832,993 Z" fill="rgba(79,93,117,0.12)"/>
+        <path d="M832,908 C896,908 896,908 960,908 L960,993 C896,993 896,993 832,993 Z" fill="#4f5d75" fill-opacity="0.12"/>
         <!-- 03: none -> interpolated 178 cues, 89px -->
-        <path d="M272,908 C336,908 336,908 400,908 L400,997 C336,997 336,997 272,997 Z" fill="rgba(79,93,117,0.32)"/>
+        <path d="M272,908 C336,908 336,908 400,908 L400,997 C336,997 336,997 272,997 Z" fill="#4f5d75" fill-opacity="0.32"/>
         <!-- 04: outlier -> verified 9 cues, 8px -->
-        <path d="M412,728 C476,728 476,728 540,728 L540,736 C476,736 476,736 412,736 Z" fill="rgba(79,93,117,0.32)" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
+        <path d="M412,728 C476,728 476,728 540,728 L540,736 C476,736 476,736 412,736 Z" fill="#4f5d75" fill-opacity="0.32" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
         <!-- 05: outlier -> rescued 16 cues, 7.25px -->
-        <path d="M552,816.5 C616,816.5 616,856 680,856 L680,863.25 C616,863.25 616,823.75 552,823.75 Z" fill="rgba(79,93,117,0.32)"/>
+        <path d="M552,816.5 C616,816.5 616,856 680,856 L680,863.25 C616,863.25 616,823.75 552,823.75 Z" fill="#4f5d75" fill-opacity="0.32"/>
         <!-- 05: interpolated -> rescued 5 cues, 4px -->
-        <path d="M552,908 C616,908 616,863.25 680,863.25 L680,867.25 C616,867.25 616,912 552,912 Z" fill="rgba(79,93,117,0.32)"/>
+        <path d="M552,908 C616,908 616,863.25 680,863.25 L680,867.25 C616,867.25 616,912 552,912 Z" fill="#4f5d75" fill-opacity="0.32"/>
         <!-- 02: anchored -> outlier 108 cues, 55.75px -->
-        <path d="M132,688.5 C196,688.5 196,728 260,728 L260,783.75 C196,783.75 196,744.25 132,744.25 Z" fill="rgba(235,108,54,0.42)"/>
+        <path d="M132,688.5 C196,688.5 196,728 260,728 L260,783.75 C196,783.75 196,744.25 132,744.25 Z" fill="#eb6c36" fill-opacity="0.42"/>
         <!-- 03: outlier -> outlier 108 cues, 55.75px -->
-        <path d="M272,728 C336,728 336,728 400,728 L400,783.75 C336,783.75 336,783.75 272,783.75 Z" fill="rgba(235,108,54,0.24)"/>
+        <path d="M272,728 C336,728 336,728 400,728 L400,783.75 C336,783.75 336,783.75 272,783.75 Z" fill="#eb6c36" fill-opacity="0.24"/>
         <!-- 04: outlier -> outlier 99 cues, 47.75px -->
-        <path d="M412,736 C476,736 476,776 540,776 L540,823.75 C476,823.75 476,783.75 412,783.75 Z" fill="rgba(235,108,54,0.24)"/>
+        <path d="M412,736 C476,736 476,776 540,776 L540,823.75 C476,823.75 476,783.75 412,783.75 Z" fill="#eb6c36" fill-opacity="0.24"/>
         <!-- 05: outlier -> outlier 83 cues, 40.5px -->
-        <path d="M552,776 C616,776 616,776 680,776 L680,816.5 C616,816.5 616,816.5 552,816.5 Z" fill="rgba(235,108,54,0.24)"/>
+        <path d="M552,776 C616,776 616,776 680,776 L680,816.5 C616,816.5 616,816.5 552,816.5 Z" fill="#eb6c36" fill-opacity="0.24"/>
         <!-- 06: verified -> outlier 3 cues, 4px -->
-        <path d="M692,732 C756,732 756,772 820,772 L820,776 C756,776 756,736 692,736 Z" fill="rgba(235,108,54,0.42)"/>
+        <path d="M692,732 C756,732 756,772 820,772 L820,776 C756,776 756,736 692,736 Z" fill="#eb6c36" fill-opacity="0.42"/>
         <!-- 06: outlier -> outlier 83 cues, 40.5px -->
-        <path d="M692,776 C756,776 756,776 820,776 L820,816.5 C756,816.5 756,816.5 692,816.5 Z" fill="rgba(235,108,54,0.24)"/>
+        <path d="M692,776 C756,776 756,776 820,776 L820,816.5 C756,816.5 756,816.5 692,816.5 Z" fill="#eb6c36" fill-opacity="0.24"/>
         <!-- 07: outlier -> outlier 86 cues, 44.5px -->
-        <path d="M832,772 C896,772 896,772 960,772 L960,816.5 C896,816.5 896,816.5 832,816.5 Z" fill="rgba(235,108,54,0.24)"/>
+        <path d="M832,772 C896,772 896,772 960,772 L960,816.5 C896,816.5 896,816.5 832,816.5 Z" fill="#eb6c36" fill-opacity="0.24"/>
         <!-- Node bars -->
         <rect x="120" y="136" width="12" height="608.25" fill="#2d3142"/>
         <rect x="120" y="908" width="12" height="89" fill="#2d3142"/>
@@ -230,26 +175,17 @@
         <line x1="276" y1="824" x2="276" y2="800" stroke="#7a8399" stroke-width="0.8"/>
         <text x="360" y="816" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">status kept · time re-set</text>
         <!-- Legend -->
-        <line x1="40" y1="1028" x2="1080" y2="1028" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <line x1="40" y1="1028" x2="1080" y2="1028" stroke="#2d3142" stroke-opacity="0.10" stroke-width="0.8"/>
         <text x="40" y="1048" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
-        <rect x="40" y="1064" width="16" height="8" fill="rgba(79,93,117,0.12)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="40" y="1064" width="16" height="8" fill="#4f5d75" fill-opacity="0.12" stroke="#4f5d75" stroke-width="1"/>
         <text x="64" y="1072" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">status unchanged</text>
-        <rect x="190" y="1064" width="16" height="8" fill="rgba(79,93,117,0.32)" stroke="#4f5d75" stroke-width="1"/>
+        <rect x="190" y="1064" width="16" height="8" fill="#4f5d75" fill-opacity="0.32" stroke="#4f5d75" stroke-width="1"/>
         <text x="214" y="1072" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">status changed</text>
-        <rect x="328" y="1064" width="16" height="8" fill="rgba(235,108,54,0.32)" stroke="#eb6c36" stroke-width="1"/>
+        <rect x="328" y="1064" width="16" height="8" fill="#eb6c36" fill-opacity="0.32" stroke="#eb6c36" stroke-width="1"/>
         <text x="352" y="1072" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">outlier stream: 02 demotion → final 86</text>
-        <rect x="619" y="1064" width="16" height="8" fill="rgba(79,93,117,0.32)" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="619" y="1064" width="16" height="8" fill="#4f5d75" fill-opacity="0.32" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
         <text x="643" y="1072" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">optional 04 (--audio only)</text>
         <rect x="833" y="1064" width="16" height="8" fill="#2d3142"/>
         <text x="857" y="1072" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">node: status count after the step</text>
         <text x="40" y="1100" fill="#4f5d75" font-size="14" font-style="italic" font-family="'Instrument Serif', serif">Of the 108 outliers, 22 end up back on WhisperX timing; 86 stay interpolated.</text>
       </svg>
-    </div>
-
-    <p class="note">1. One column per step: each column is the status count after that step. Only 07 finalize_timing is folded into the final column; it adjusts timing (no overlap, reading speed, min/max duration) and changes no status.</p>
-    <p class="note">2. Scale: k = 0.5 px per cue throughout; every column is 697.25px = 1391 cues (the generator asserts conservation per node and per column). Node heights follow the true counts.</p>
-    <p class="note">3. Minimum band 4px: the 3-, 5- and 6-cue bands are drawn at 4px (true size 1.5–3px), so the verified node at 04–05 (9 cues) is 8px to hold 06's 6 + 3 split, and rescued (21 cues, including a 4px 5-cue band) is 11.25px. The extra height is absorbed inside the outlier stream; every other node is within 3.5% of its count. All printed numbers are true counts.</p>
-    <p class="note">4. 05 acts on the 99 outliers left after 04 and the 178 interpolated cues: it rescues 16 outliers and 5 interpolated, 21 in all. 06 sends 3 verified cues back to outlier and re-interpolates them; no anchored or rescued cue was reverted in this run.</p>
-  </div>
-</body>
-</html>

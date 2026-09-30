@@ -78,7 +78,11 @@ Version pitfalls (RTX 50-series, TorchCodec, FFmpeg DLLs, encodings) are in
 
 ## Usage
 
-### 1. Transcribe the video with WhisperX
+### Regular
+
+Run the tools by hand on one video.
+
+#### 1. Transcribe the video with WhisperX
 
 ```powershell
 whisperx "F:\Videos\movie.mp4" --language en --model large-v3 --device cuda --compute_type float16 --output_dir "F:\Videos\whisper-output"
@@ -87,7 +91,7 @@ whisperx "F:\Videos\movie.mp4" --language en --model large-v3 --device cuda --co
 This writes `.json`, `.srt`, `.vtt`, `.tsv` and `.txt`. Keep the `.json`:
 it is the only one with per-word times.
 
-### 2. Retime the subtitle
+#### 2. Retime the subtitle
 
 ```powershell
 python align_srt.py original.srt "F:\Videos\whisper-output\movie.srt" fixed.srt --audio "F:\Videos\movie.mp4"
@@ -105,7 +109,7 @@ Use the subtitle **as downloaded**. Running ffsubsync first is only needed
 when the original is off by more than about 10–20 s or runs at a different
 speed (e.g. 25 vs 23.976 fps); it also strips `<i>` and `♪`.
 
-### 3. Check the result
+#### 3. Check the result
 
 ```powershell
 python evaluate_timing.py original.srt fixed.srt --audio "F:\Videos\movie.mp4"
@@ -114,7 +118,7 @@ python evaluate_timing.py original.srt fixed.srt --audio "F:\Videos\movie.mp4"
 Then open the video and `fixed.srt` in Subtitle Edit and review the lines
 the report flags (see [Output](#output)).
 
-### GUI
+#### GUI
 
 ```powershell
 python gui.py
@@ -124,6 +128,46 @@ Pick the original subtitle, the WhisperX file and the output path. Tick
 **Audio check** and pick the video to run with `--audio`. The alignment
 runs in the background, so the window stays responsive; a dialog shows the
 summary when it finishes.
+
+### DVC
+
+Run the whole chain (transcribe → align → evaluate) on the test films and
+compare runs. This needs the one-time setup in
+[Development workflow (DVC)](#development-workflow-dvc). Activate `.venv`
+first: the stages call `python` and `whisperx` from `PATH`, and a system
+Python without the dependencies fails with `No module named 'srt'`.
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+cd lab
+dvc repro
+```
+
+All commands run inside `lab/`.
+
+| Goal | Command |
+|---|---|
+| Run what changed | `dvc repro` |
+| Choose the films that run | `python pick_films.py` (window) or `python pick_films.py <film id> ...` |
+| Run one selected film only, once | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
+| Current metrics | `dvc metrics show` |
+| Metrics vs the last commit | `dvc metrics diff` |
+| Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
+| Try a different tuning constant | `dvc exp run -S align.reject_outliers_audio.strong_dev=1.2 -n reject-1.2s` |
+| Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
+| Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
+| Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |
+| What one step changed | filter `out/<film>/changes.csv` by `step`, e.g. `05_rescue_local` |
+
+After a `dvc repro` that failed partway, DVC may not have written the
+`.gitignore` entries for the stages that did finish, and `git status` then
+lists outputs such as `out/<film>/fixed.srt`. Run `dvc commit -f` to write
+them before committing; otherwise run outputs end up in git.
+
+`dvc exp run` takes a copy of the uncommitted code with each run, so trying a
+change does not need a commit first. In the VS Code **Experiments** table,
+tick the runs to compare; the **Plots** view then draws their per-step
+charts side by side.
 
 ## Output
 
@@ -192,18 +236,33 @@ or rejected.
 
 | # | Step | Function | Kind |
 |---|---|---|---|
-| 1 | Normalize and split both texts into words; exact word matching, global and in order | `tokenize`, `align_words` (difflib) | structure |
-| 2 | Fuzzy matching inside the gaps between exact matches (similar words, 2:1 joins such as "dog man" / "dogman") | `_fuzzy_gap` | repair |
-| 3 | Time each line from its first and last matched word; drop a first/last word pinned seconds away from the rest | `time_cues`, `_trim_edge_words` | check |
-| 4 | Reject WhisperX times far from the neighbours' median offset; stricter for weakly matched lines | `reject_outliers`, `_is_strong` | check |
-| 5 | Fallback time for rejected and unmatched lines: original time + median local offset | `interpolate_missing` | fill |
-| 6 | `--audio` only: restore a rejected time if the audio clearly prefers it (lines with 3+ words) | `verify_with_audio`, `AudioJudge` | evidence |
-| 7 | Search again for unplaced lines within ±1.5 s of the fallback time | `rescue_local` | repair |
-| 8 | Revert lines that break the subtitle order, then re-interpolate | `revert_out_of_order` | check |
-| 9 | No overlaps, minimum reading time, small start adjustments | `finalize_timing` | finishing |
+| 0 | Normalize and split both texts into words; exact word matching, global and in order; fuzzy matching inside the gaps between exact matches (similar words, 2:1 joins such as "dog man" / "dogman") | `tokenize`, `align_words` (difflib), `_fuzzy_gap` | structure, repair |
+| 01 | Time each line from its first and last matched word; drop a first/last word pinned seconds away from the rest | `time_cues`, `_trim_edge_words` | check |
+| 02 | Reject WhisperX times far from the neighbours' median offset; stricter for weakly matched lines | `reject_outliers`, `_is_strong` | check |
+| 03 | Fallback time for rejected and unmatched lines: original time + median local offset | `interpolate_missing` | fill |
+| 04 | `--audio` only: restore a rejected time if the audio clearly prefers it (lines with 3+ words) | `verify_with_audio`, `AudioJudge` | evidence |
+| 05 | Search again for unplaced lines within ±1.5 s of the fallback time | `rescue_local` | repair |
+| 06 | Revert lines that break the subtitle order, then re-interpolate | `revert_out_of_order` | check |
+| 07 | No overlaps, minimum reading time, small start adjustments | `finalize_timing` | finishing |
 
-Step 8 exists because steps 4–7 edit times line by line and can undo the
-ordering that step 1 guarantees.
+Steps 01–07 are numbered like the snapshot files (`out/<film>/steps/NN_<step>.csv`);
+step 0 writes no snapshot. Step 06 exists because steps 02–05 edit times
+line by line and can undo the ordering that step 0 guarantees.
+
+Each step handles only some statuses and lets the others pass by. The
+flowchart shows which step each status goes through (one column per
+status); the Sankey shows how many lines take each path, one column per
+step. Both use the *Dog Man* run (1391 lines, `--audio`); open an image for
+full size. Their sources are in [`lab/docs/diagrams/`](lab/docs/diagrams/),
+generated by the project skill in `.claude/skills/status-flowchart/`.
+
+<p align="center">
+  <img src="lab/docs/diagrams/cue-flowchart.svg" width="928" alt="Status flowchart: each status connects straight to the step that processes it and passes by the others; 1391 lines end as anchored 1105, verified 6, rescued 21, outlier 86, interpolated 173">
+</p>
+
+<p align="center">
+  <img src="lab/docs/diagrams/cue-status-sankey.svg" width="1120" alt="Sankey diagram, one column per step: 108 lines demoted to outlier at step 02; 9 verified at 04, 16 rescued at 05, 3 reverted at 06, 86 end as outlier">
+</p>
 
 ### Key constants
 
@@ -437,31 +496,7 @@ dvc exp run -S align.rescue_local.time_window=2 -n rescue-2s
 
 #### Daily loop
 
-All commands run inside `lab/`.
-
-| Goal | Command |
-|---|---|
-| Run what changed | `dvc repro` |
-| Choose the films that run | `python pick_films.py` (window) or `python pick_films.py <film id> ...` |
-| Run one selected film only, once | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
-| Current metrics | `dvc metrics show` |
-| Metrics vs the last commit | `dvc metrics diff` |
-| Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
-| Try a different tuning constant | `dvc exp run -S align.reject_outliers_audio.strong_dev=1.2 -n reject-1.2s` |
-| Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
-| Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
-| Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |
-| What one step changed | filter `out/<film>/changes.csv` by `step`, e.g. `05_rescue_local` |
-
-After a `dvc repro` that failed partway, DVC may not have written the
-`.gitignore` entries for the stages that did finish, and `git status` then
-lists outputs such as `out/<film>/fixed.srt`. Run `dvc commit -f` to write
-them before committing; otherwise run outputs end up in git.
-
-`dvc exp run` takes a copy of the uncommitted code with each run, so trying a
-change does not need a commit first. In the VS Code **Experiments** table,
-tick the runs to compare; the **Plots** view then draws their per-step
-charts side by side.
+The commands for running the pipeline are under [Usage → DVC](#dvc).
 
 #### Choosing films
 
@@ -509,6 +544,7 @@ so compare snapshots by step name rather than by number across runs.
 | `requirements.txt` | Python dependencies |
 | `requirements-dev.txt` | development tools (DVC) |
 | `lab/` | DVC development pipeline, test subtitles and run outputs (see [Development workflow](#development-workflow-dvc)) |
+| `.claude/skills/status-flowchart/` | project skill and generators for the pipeline diagrams in `lab/docs/diagrams/` |
 | `LESSONS.md` | what went wrong while building this, and why the design is what it is |
 | `TROUBLESHOOTING.md` | installation and Windows problems |
 | `README.zh.md` | the old Chinese README (outdated) |

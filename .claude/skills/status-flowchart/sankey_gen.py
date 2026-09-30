@@ -30,7 +30,7 @@ MIN_BAND = 4.0   # px, minimum rendered ribbon
 
 # ---------------------------------------------------------------- data
 COLS = [
-    ("01 time_cues", "Match & time", None),
+    ("01 time_cues", "Match &amp; time", None),
     ("02 reject_outliers", "Reject outliers", None),
     ("03 interpolate_missing", "Interpolate", None),
     ("04 verify_with_audio", "Audio check", "OPTIONAL · --AUDIO"),
