@@ -9,3 +9,4 @@ __pycache__/
 *.report.csv
 dvc_plots/
 lab/cache/
+lab/debug/

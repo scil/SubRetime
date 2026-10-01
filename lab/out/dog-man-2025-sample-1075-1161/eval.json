@@ -1,0 +1,40 @@
+{
+  "structure": {
+    "baseline": {
+      "overlaps": 0,
+      "out_of_order": 0,
+      "under_0.7s": 0,
+      "over_7s": 0,
+      "over_25cps": 2
+    },
+    "fixed.srt": {
+      "overlaps": 0,
+      "out_of_order": 0,
+      "under_0.7s": 0,
+      "over_7s": 0,
+      "over_25cps": 0
+    }
+  },
+  "unpaired": {
+    "fixed.srt": 0
+  },
+  "control": {
+    "3+ words": {
+      "wins": 25,
+      "size": 29
+    },
+    "shorter": {
+      "wins": 13,
+      "size": 23
+    }
+  },
+  "disputes": {
+    "fixed.srt": {
+      "disputed": 2,
+      "wins": 1,
+      "losses": 0,
+      "ties": 0,
+      "unjudged": 1
+    }
+  }
+}

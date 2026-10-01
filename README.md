@@ -382,6 +382,7 @@ These steps assume the normal [Installation](#installation) above is done
    | `<id>.video` | the video (audio source for WhisperX and `--audio`); an absolute path is fine |
    | `<id>.original` | the subtitle to retime, as downloaded, e.g. `films/dog-man-2025/original.srt` |
    | `<id>.baseline` | reference timeline for `evaluate_timing.py`, e.g. `films/dog-man-2025/ffsubsync.srt` |
+   | `<id>.whisper` | optional: a WhisperX transcript folder of the film's own (a [sample](#sample-films-for-debugging) has one); the film then skips the transcribe stage. Default: `work/<id>/whisper`, written by that stage |
    | `whisper.*` (params.yaml) | WhisperX model, language, device, compute type |
 
    Then choose which of them run (see [Choosing films](#choosing-films)):
@@ -428,15 +429,18 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `films.yaml` | every test film: video, subtitle, baseline (edited by hand) |
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
+| `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
 | `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
-| `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (not ignored by git; not committed yet) |
+| `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
+| `films/<sample>/whisper/` | a sample's WhisperX `.json`, cut from its film's (committed) |
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
 | `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
 | `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
 | `out/<film>/steps/00_align_words.csv` | **word snapshot**: input and output of `align_words`, one row per word (below) |
 | `out/<film>/changes.csv` | every line each step changed, before → after |
 | `cache/<film>/confidence.sqlite` | audio judge scores reused across runs (git-ignored, not a DVC output) |
+| `debug/<film>/` | outputs of the VS Code debug configuration (git-ignored) |
 | `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
 | `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
 
@@ -505,15 +509,19 @@ The commands for running the pipeline are under [Usage → DVC](#dvc).
 DVC runs every film in `lab/selection.yaml`. That file is generated from
 `films.yaml` by `pick_films.py`, because DVC's templates cannot pick entries
 by a parameter (`films[<param>]` is not supported). `dvc.yaml` loads it
-through `vars` and repeats its stages for each film with `foreach`.
+through `vars` and repeats its stages for each film with `foreach`. It
+holds two lists: `films` (align and evaluate run over it) and `transcribe`,
+the films among them without a `whisper` transcript of their own.
 
 ```powershell
 cd lab
-python pick_films.py                     # window: a checkbox per film
+python pick_films.py                     # window: a checkbox per films/ folder
 python pick_films.py ann-droid-s01e01    # no window: write the selection
 ```
 
-The window has two buttons. **Save selection** writes `selection.yaml`;
+The window lists the folders in `lab/films/`; tick any number of them (**All**
+/ **None** tick or clear every one). A folder that `films.yaml` does not
+describe yet is greyed out. **Save selection** writes `selection.yaml`;
 **Save and run dvc repro** also runs the pipeline and shows its output.
 The window puts its own interpreter's folder first on `PATH`, so the stages'
 `python` and `whisperx` are the ones in `.venv`, even when the window was
@@ -539,6 +547,46 @@ so compare snapshots by step name rather than by number across runs.
 does not move the line snapshots' numbers. In the Plots view its
 `shift_s` is per word (the line's shift plus the word's place in the line),
 so it scatters more than the line snapshots.
+
+#### Sample films for debugging
+
+A full film is too long to step through `align_subtitles()` in a debugger.
+`make_sample.py` cuts a range of cues out of a film that has already run,
+into a test film of its own:
+
+```powershell
+cd lab
+python make_sample.py dog-man-2025 1075 1161
+```
+
+It writes `films/dog-man-2025-sample-1075-1161/` with the cues' subtitles,
+baseline and WhisperX words, and prints the entry to add to `films.yaml`.
+Times and cue numbers stay the film's, so the sample's snapshots line up
+with the film's row by row, and the audio judge asks the same questions of
+the same video. The WhisperX words are the ones the film's word alignment
+(`00_align_words.csv`) left between the cues before and after the range,
+not the ones inside a time span: those would give the edge cues words that
+belong to their neighbours.
+
+Leave margin around the cues you want to study. `reject_outliers` compares
+a line with the 8 anchored lines on each side, and `interpolate_missing`
+times lines from their anchored neighbours however far away they are. With
+fewer, the edge lines end up differently than in the full film. The
+committed sample, cues 1075-1161 of Dog Man, is cut for studying
+1092-1151; every step's snapshot matches the full film's except on its
+last line. It covers every status change the full film has (anchored →
+outlier, none → interpolated, outlier → verified, outlier/interpolated →
+rescued, verified → outlier). After cutting a new sample, run it and
+compare its snapshots with the film's.
+
+To step through it, select it (`python pick_films.py
+dog-man-2025-sample-1075-1161`), run `dvc repro` once to fill its audio
+cache, then start **align sample (dog-man 1075-1161)** in VS Code's Run and
+Debug view (`.vscode/launch.json`). That configuration passes the align
+stage's arguments, writes to `lab/debug/` (git-ignored), and answers every
+audio question from the cache, so the video and the GPU are never loaded.
+[`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
+where to stop and which lines to watch at each step.
 
 ### Project layout
 

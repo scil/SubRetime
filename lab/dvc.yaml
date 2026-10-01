@@ -14,7 +14,8 @@ vars:
 
 stages:
   transcribe:
-    foreach: ${films}
+    # Only films without a transcript of their own (see pick_films.py).
+    foreach: ${transcribe}
     do:
       cmd: >-
         whisperx "${item.video}" --language ${whisper.language}
@@ -32,7 +33,7 @@ stages:
     foreach: ${films}
     do:
       cmd: >-
-        python ../align_srt.py "${item.original}" work/${key}/whisper
+        python ../align_srt.py "${item.original}" ${item.whisper}
         out/${key}/fixed.srt --audio "${item.video}" --quiet
         --report out/${key}/fixed.report.csv --snapshots out/${key}/steps
         --metrics out/${key}/align.json --params params.yaml
@@ -42,7 +43,7 @@ stages:
         - ../align_srt.py
         - ${item.original}
         - ${item.video}
-        - work/${key}/whisper
+        - ${item.whisper}
       params:
         - align
       outs:
