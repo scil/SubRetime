@@ -990,7 +990,7 @@ def main():
 
     new_words, source = load_whisper_words(Path(args.new))
 
-    print(f"Original subtitles: {len(original)}")
+    print(f"Original subtitles: {len(original)} from {Path(args.original)}")
     print(f"WhisperX words:     {len(new_words)} from {source}")
     print()
 
