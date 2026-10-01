@@ -127,7 +127,7 @@ def load_whisper_words(path: Path) -> tuple[list[Word], str]:
         raw = data.get("word_segments") or [
             w for seg in data["segments"] for w in seg.get("words", [])
         ]
-        return _fill_missing_times(raw), f"{json_path.name} (word timestamps)"
+        return _fill_missing_times(raw), f"{json_path} (word timestamps)"
 
     # SRT only: spread each segment's duration over its words by length.
     with open(path, "r", encoding="utf-8-sig") as f:
@@ -145,7 +145,7 @@ def load_whisper_words(path: Path) -> tuple[list[Word], str]:
             w_start = start + span * pos / total
             pos += len(t)
             words.append(Word(t, w_start, start + span * pos / total))
-    return words, f"{path.name} (segment timestamps, interpolated)"
+    return words, f"{path} (segment timestamps, interpolated)"
 
 
 # ---------------------------------------------------------------------------
