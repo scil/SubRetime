@@ -54,7 +54,7 @@ def ask():
         print("  p) select other films (opens the pick_films window)")
         answer = input("Film to debug [1]: ").strip().lower() or "1"
         if answer == "p":
-            pick_films.gui()
+            pick_films.gui(from_debugger=True)
             continue
         if answer.isdigit() and 1 <= int(answer) <= len(films):
             film = list(films)[int(answer) - 1]

@@ -617,9 +617,11 @@ Films selected in pick_films.py:
 Film to debug [1]:
 ```
 
-`p` opens the `pick_films` window; tick other films, **Save selection**
-(or **Save and run dvc repro** for films that have not run yet), close
-it, and the list is asked again. A film without a transcript yet is marked
+`p` opens the `pick_films` window; tick other films and press **Save
+selection** (or **Save and run dvc repro** for films that have not run
+yet). Saving closes the window (a run, once it ends with exit code 0;
+a failed run leaves it open to read), and the list is asked again.
+Closing the window by hand does the same without saving. A film without a transcript yet is marked
 and cannot be chosen until it has run. `debug_film.py` then passes the
 align stage's arguments for the film (from `selection.yaml`), writes to
 `lab/debug/<film>/` (git-ignored), and uses the pipeline's audio cache, so

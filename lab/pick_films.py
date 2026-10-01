@@ -51,9 +51,9 @@ Save and run dvc repro
     - the step snapshots, out/<film>/steps/, to compare with while debugging
   Wait for "exit code" before closing the window.
 
-Opened from the debugger (debug_film.py, answer p): for films that already
-ran, Save selection is enough; close the window and pick the film in the
-terminal. The pipeline never pauses at stops.yaml's stops.
+Opened from the debugger (debug_film.py, answer p): Save selection, or a
+successful Save and run dvc repro, closes the window and returns to the film
+list in the terminal. The pipeline never pauses at stops.yaml's stops.
 
 Choose video... adds a films/ folder that films.yaml does not describe yet.
 """
@@ -137,7 +137,9 @@ def dvc_env():
     return env
 
 
-def gui():
+def gui(from_debugger=False):
+    """from_debugger: opened by debug_film.py, which waits for the window to
+    close; saving (or a successful run) closes it."""
     import tkinter as tk
     from tkinter import filedialog, messagebox
 
@@ -149,7 +151,8 @@ def gui():
     rows = [f for f in catalog if f in folders] + [f for f in folders if f not in catalog]
 
     root = tk.Tk()
-    root.title("SubRetime lab: films")
+    root.title("SubRetime lab: films" + (" (saving returns to the debugger)"
+                                         if from_debugger else ""))
 
     tk.Label(root, text="Films to run (folders in lab/films/)").grid(
         row=0, column=0, columnspan=3, padx=8, pady=(8, 2), sticky="w")
@@ -282,6 +285,8 @@ def gui():
                 if isinstance(item, tuple):
                     append(f"exit code {item[0]}\n")
                     run_button.configure(state="normal", text="Save and run dvc repro")
+                    if from_debugger and item[0] == 0:
+                        root.after(1500, root.destroy)  # let the result show
                     return
                 append(item)
 
@@ -292,7 +297,11 @@ def gui():
         side="left", padx=6)
     tk.Button(buttons, text="None", command=lambda: check_all(False), width=6).pack(
         side="left", padx=6)
-    tk.Button(buttons, text="Save selection", command=save, width=20).pack(
+    def save_clicked():
+        if save() and from_debugger:
+            root.destroy()
+
+    tk.Button(buttons, text="Save selection", command=save_clicked, width=20).pack(
         side="left", padx=6)
     run_button = tk.Button(buttons, text="Save and run dvc repro", command=run,
                            width=24)
