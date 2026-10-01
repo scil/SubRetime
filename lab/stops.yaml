@@ -1,11 +1,12 @@
-# Where the "step through sample (stops.yaml)" debug configuration pauses
+# Where the "step through film (stops.yaml)" debug configuration pauses
 # inside align_srt.py (see dev_stops.py). Edit, then start the debugger
 # again: the file is read once, at startup.
 #
 # steps: any of align_words, time_cues, reject_outliers,
 #   interpolate_missing, verify_with_audio, rescue_local,
 #   revert_out_of_order, finalize_timing; or all.
-# cues: pause only on these lines; leave empty for every line.
+# cues: pause only on these lines (cue numbers of the film you pick);
+#   leave empty for every line.
 #   align_words has no line: it pauses at every gap it tries.
 #
 # Cue 1134: anchored, rejected (02), restored by audio (04), reverted (06).

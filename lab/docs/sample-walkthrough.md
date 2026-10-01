@@ -11,7 +11,8 @@ matches the full film's (see "Sample films for debugging" in the README).
 1. `cd lab`, `python pick_films.py dog-man-2025-sample-1092-1151`, then
    `dvc repro`. This fills `cache/dog-man-2025-sample-1092-1151/`, so the
    debugger answers every audio question from the cache.
-2. In VS Code, Run and Debug → **align sample (dog-man 1092-1151)**.
+2. In VS Code, Run and Debug → **align film (no stops)**, and pick
+   `dog-man-2025-sample-1092-1151` from the list (the default).
    Outputs go to `lab/debug/dog-man-2025-sample-1092-1151/`.
 3. Keep `lab/out/dog-man-2025-sample-1092-1151/steps/` open next to the
    code: each `NN_<step>.csv` is what `results` looks like after that step.
@@ -19,7 +20,7 @@ matches the full film's (see "Sample films for debugging" in the README).
 `results` is a list in cue order, so cue *N* is `results[N - 1076]`.
 
 To pause without clicking breakpoints, list steps and lines in
-`lab/stops.yaml` and start **step through sample (stops.yaml)** instead:
+`lab/stops.yaml` and start **step through film (stops.yaml)** instead:
 
 ```yaml
 steps: [reject_outliers, verify_with_audio, revert_out_of_order]
@@ -31,7 +32,8 @@ about a line, the "Breakpoint" line of each section below. With that
 configuration (it sets `SUBRETIME_STOPS`), the call pauses there for the
 listed steps and lines; F5 goes on to the next one. Restart the debugger
 after editing the file. Elsewhere, a conditional breakpoint such as
-`r.sub.index == 1134` stops on one line. The Debug Console evaluates expressions at the current frame, e.g.
+`r.sub.index == 1134` stops on one line. The Debug Console evaluates
+expressions at the current frame, e.g.
 `[(r.sub.index, r.status, r.offset) for r in results[16:30]]`.
 
 ## Steps

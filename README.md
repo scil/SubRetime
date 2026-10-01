@@ -430,7 +430,8 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
 | `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
-| `stops.yaml` | where the **step through sample** debug configuration pauses (below) |
+| `stops.yaml` | where the **step through film** debug configuration pauses (below) |
+| `debug_film.py` | run `align_srt.py` on a film of `films.yaml` for VS Code's debugger; keeps `launch.json`'s film list in sync (below) |
 | `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
@@ -594,19 +595,30 @@ line is only reported. The committed sample matches on every studied line
 and covers every status change the full film has (anchored → outlier,
 none → interpolated, outlier → verified, outlier/interpolated → rescued,
 verified → outlier).
-To step through it, select it (`python pick_films.py
-dog-man-2025-sample-1092-1151`), run `dvc repro` once to fill its audio
-cache, then start **align sample (dog-man 1092-1151)** in VS Code's Run and
-Debug view (`.vscode/launch.json`). That configuration passes the align
-stage's arguments, writes to `lab/debug/` (git-ignored), and answers every
-audio question from the cache, so the video and the GPU are never loaded.
-[`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
-where to stop and which lines to watch at each step.
 
-To pause at those points without clicking breakpoints, start **step through
-sample (stops.yaml)** instead. It sets `SUBRETIME_STOPS` to
-`lab/stops.yaml`, which lists the steps and, optionally, the lines to pause
-on:
+#### Stepping through a film in VS Code
+
+Run a film through the pipeline once (`python pick_films.py <film>`,
+`dvc repro`), so its transcript exists and its audio cache is filled. Then
+start one of the two configurations in VS Code's Run and Debug view
+(`.vscode/launch.json`); each asks which film of `films.yaml` to align:
+
+| Configuration | Pauses |
+|---|---|
+| **step through film (stops.yaml)** (F5's default) | where `lab/stops.yaml` says (below), and at your breakpoints |
+| **align film (no stops)** | only at your breakpoints |
+
+Both run `lab/debug_film.py <film>`, which passes the align stage's
+arguments for that film, writes to `lab/debug/<film>/` (git-ignored), and
+uses the pipeline's audio cache, so the video and the GPU are never loaded.
+VS Code cannot read the list of films from a file, so `debug_film.py`
+rewrites it in `launch.json` from `films.yaml` on every run; after adding a
+film, run `python lab/debug_film.py --sync` to see it in the list at once.
+[`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
+where to stop and which lines to watch at each step of the sample.
+
+`lab/stops.yaml` lists the steps and, optionally, the lines (cue numbers of
+the picked film) to pause on:
 
 ```yaml
 steps: [reject_outliers, verify_with_audio, revert_out_of_order]   # or [all]
@@ -616,9 +628,12 @@ cues: [1134]
 Each step of `align_srt.py` calls `stop_for_debug(step, cue)` where it
 decides about a line. The function comes from `dev_stops.py`, which calls
 `breakpoint()` when the file asks for that step and line, and does nothing
-when `SUBRETIME_STOPS` is not set (the CLI, the GUI and the pipeline never
-set it). A misspelled step name stops the run at startup. Without
-`dev_stops.py` next to it, `align_srt.py` runs as before.
+when `SUBRETIME_STOPS` is not set. Only the first configuration sets it: do
+not set it in a shell or system-wide, or `dvc repro`, `pick_films.py` and
+`gui.py` would stop at an invisible pdb prompt. A misspelled step name
+stops the run at startup. Without `dev_stops.py` next to it,
+`align_srt.py` runs as before. On a full film, list `cues`: without them
+every listed step pauses on every line.
 
 ### Project layout
 
