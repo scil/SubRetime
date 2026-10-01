@@ -6,19 +6,22 @@
   // is the one `dvc repro` filled for this sample: every audio question is
   // answered from it, so the video and the GPU model are never loaded.
   //
-  // The second configuration also sets SUBRETIME_STOPS: the run pauses
-  // inside the steps and on the lines that lab/stops.yaml lists
-  // (see dev_stops.py).
+  // The first configuration (F5's default) also sets SUBRETIME_STOPS: the
+  // run pauses inside the steps and on the lines that lab/stops.yaml lists
+  // (see dev_stops.py). The second runs without pausing.
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "align sample (dog-man 1092-1151)",
+      "name": "step through sample (stops.yaml)",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/align_srt.py",
       "cwd": "${workspaceFolder}/lab",
       "console": "integratedTerminal",
       "justMyCode": true,
+      "env": {
+        "SUBRETIME_STOPS": "${workspaceFolder}/lab/stops.yaml"
+      },
       "args": [
         "films/dog-man-2025-sample-1092-1151/original.srt",
         "films/dog-man-2025-sample-1092-1151/whisper",
@@ -32,16 +35,13 @@
       ]
     },
     {
-      "name": "step through sample (stops.yaml)",
+      "name": "align sample (dog-man 1092-1151)",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/align_srt.py",
       "cwd": "${workspaceFolder}/lab",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "env": {
-        "SUBRETIME_STOPS": "${workspaceFolder}/lab/stops.yaml"
-      },
       "args": [
         "films/dog-man-2025-sample-1092-1151/original.srt",
         "films/dog-man-2025-sample-1092-1151/whisper",
