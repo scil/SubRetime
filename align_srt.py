@@ -191,11 +191,16 @@ def _fuzzy_gap(a: list[str], b: list[str], min_sim: float):
 
 
 def align_words(orig: list[str], new: list[str], min_sim=0.75,
-                max_gap_cells=4000) -> dict[int, tuple[int, int]]:
+                max_gap_cells=4000, trace=None) -> dict[int, tuple[int, int]]:
     """
     Map original word index -> (first, last) WhisperX word index,
     monotonically. Exact runs come from difflib; the gaps between them are
     filled by fuzzy pairing (spelling variants, split/joined words).
+
+    trace: a list to append one entry per gap between exact runs:
+    {"orig": (start, stop), "new": (start, stop), "status": s}, where s is
+    "tried" (fuzzy pairing ran), "skipped" (larger than max_gap_cells) or
+    "one_sided" (words on one side only, nothing to pair); development only.
     """
     matcher = difflib.SequenceMatcher(None, orig, new, autojunk=False)
     mapping = {}
@@ -204,9 +209,17 @@ def align_words(orig: list[str], new: list[str], min_sim=0.75,
     for block in matcher.get_matching_blocks():
         gap_a = orig[prev_i:block.a]
         gap_b = new[prev_j:block.b]
-        if gap_a and gap_b and len(gap_a) * len(gap_b) <= max_gap_cells:
+        if not (gap_a and gap_b):
+            status = "one_sided"
+        elif len(gap_a) * len(gap_b) > max_gap_cells:
+            status = "skipped"
+        else:
+            status = "tried"
             for gi, gj0, gj1 in _fuzzy_gap(gap_a, gap_b, min_sim):
                 mapping[prev_i + gi] = (prev_j + gj0, prev_j + gj1)
+        if trace is not None and (gap_a or gap_b):
+            trace.append({"orig": (prev_i, block.a), "new": (prev_j, block.b),
+                          "status": status})
         for k in range(block.size):
             mapping[block.a + k] = (block.b + k, block.b + k)
         prev_i, prev_j = block.a + block.size, block.b + block.size
@@ -632,6 +645,93 @@ def write_snapshot(results, path):
             ])
 
 
+def write_word_snapshot(original, orig_tokens, orig_owner, new_words,
+                        mapping, trace, path):
+    """
+    The input and output of align_words in one table: both word streams
+    merged in order, one row per original word, with each WhisperX word that
+    no original word took in a row of its own where it falls.
+    """
+    def fmt(t):
+        return "" if t is None else f"{t:.3f}"
+
+    # Original words sharing one WhisperX word: a 2:1 join ("dog man").
+    shared = {}
+    for j_range in mapping.values():
+        shared[j_range] = shared.get(j_range, 0) + 1
+
+    # Which gap between exact runs each word fell in (absent: inside a run).
+    orig_gap, new_gap = {}, {}
+    for g in trace:
+        (i0, i1), (j0, j1) = g["orig"], g["new"]
+        size = f"{i1 - i0}x{j1 - j0}"
+        for i in range(i0, i1):
+            orig_gap[i] = (g["status"], size)
+        for j in range(j0, j1):
+            new_gap[j] = (g["status"], size)
+
+    def whisper_only(j):
+        w = new_words[j]
+        gap, size = new_gap.get(j, ("", ""))
+        return ["", "", "", j, w.text, fmt(w.start), fmt(w.end), "", "",
+                "whisper_only", gap, size]
+
+    rows = []
+    next_j = 0  # first WhisperX word not written yet
+    for i, token in enumerate(orig_tokens):
+        sub = original[orig_owner[i]]
+        orig_start = sub.start.total_seconds()
+        gap, size = orig_gap.get(i, ("", ""))
+        if i not in mapping:
+            rows.append([sub.index, i, token, "", "", "", "", fmt(orig_start),
+                         "", "orig_only", gap, size])
+            continue
+        j0, j1 = mapping[i]
+        rows.extend(whisper_only(j) for j in range(next_j, j0))
+        next_j = max(next_j, j1 + 1)
+        if j1 > j0:
+            kind = "split"
+        elif shared[(j0, j1)] > 1:
+            kind = "join"
+        elif token == new_words[j0].text:
+            kind = "exact"
+        else:
+            kind = "fuzzy"
+        start = new_words[j0].start
+        rows.append([sub.index, i, token,
+                     str(j0) if j0 == j1 else f"{j0}-{j1}",
+                     " ".join(w.text for w in new_words[j0:j1 + 1]),
+                     fmt(start), fmt(new_words[j1].end), fmt(orig_start),
+                     f"{start - orig_start:+.3f}", kind, gap, size])
+    rows.extend(whisper_only(j) for j in range(next_j, len(new_words)))
+
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow([
+            "index",          # line (cue) number the original word is in;
+                              # empty for a WhisperX-only row
+            "orig_i",         # position of the word among all original words
+            "orig_word",      # the original word, normalized (input)
+            "new_j",          # WhisperX word position(s) it maps to: "j", or
+                              # "j0-j1" for a split (output)
+            "whisper_word",   # the WhisperX word(s) at new_j (input)
+            "whisper_start",  # s: start of the first WhisperX word
+            "whisper_end",    # s: end of the last WhisperX word
+            "orig_start",     # s: original start of the word's line
+            "shift_s",        # whisper_start - orig_start: the line's shift
+                              # plus the word's place inside the line
+            "kind",           # exact | fuzzy (similar spelling) | split (one
+                              # original word, several WhisperX words) | join
+                              # (several original words, one WhisperX word) |
+                              # orig_only | whisper_only (not matched)
+            "gap",            # empty: inside an exact run; else the gap
+                              # between exact runs it fell in: tried |
+                              # skipped (over max_gap_cells) | one_sided
+            "gap_size",       # that gap: original words x WhisperX words
+        ])
+        writer.writerows(rows)
+
+
 CHANGES_HEADER = ["step", "index", "status_before", "status_after",
                   "start_before", "start_after", "moved_s", "end_before",
                   "end_after", "text", "notes"]
@@ -673,7 +773,8 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
                     snapshot_dir=None, settings=None, changes_path=None):
     """
     snapshot_dir: write the per-cue state after every step as
-    NN_<step>.csv there (see write_snapshot).
+    NN_<step>.csv there (see write_snapshot), and align_words' input and
+    output as 00_align_words.csv (see write_word_snapshot).
     settings: {step name: {keyword: value}} overriding the steps' defaults
     (see TUNABLE and load_settings); development only.
     changes_path: write one row per cue a step changed, starting from the
@@ -709,7 +810,15 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
             orig_owner.append(ci)
 
     new_tokens = [w.text for w in new_words]
-    mapping = align_words(orig_tokens, new_tokens, **kw("align_words"))
+    trace = [] if snapshot_dir else None
+    mapping = align_words(orig_tokens, new_tokens, trace=trace,
+                          **kw("align_words"))
+    if snapshot_dir:
+        # Word-level, before any line has a time; numbered 00 so the line
+        # snapshots keep their numbers (snapshot() is not called).
+        write_word_snapshot(original, orig_tokens, orig_owner, new_words,
+                            mapping, trace,
+                            Path(snapshot_dir) / "00_align_words.csv")
 
     results = time_cues(original, orig_owner, mapping, new_words,
                         **kw("time_cues"))

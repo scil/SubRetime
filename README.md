@@ -245,8 +245,9 @@ or rejected.
 | 06 | Revert lines that break the subtitle order, then re-interpolate | `revert_out_of_order` | check |
 | 07 | No overlaps, minimum reading time, small start adjustments | `finalize_timing` | finishing |
 
-Steps 01–07 are numbered like the snapshot files (`out/<film>/steps/NN_<step>.csv`);
-step 0 writes no snapshot. Step 06 exists because steps 02–05 edit times
+Steps 01–07 are numbered like the snapshot files (`out/<film>/steps/NN_<step>.csv`).
+Step 0 writes `00_align_words.csv`, which is per word rather than per line
+(see [Development workflow](#development-workflow-dvc)). Step 06 exists because steps 02–05 edit times
 line by line and can undo the ordering that step 0 guarantees.
 
 Each step handles only some statuses and lets the others pass by. The
@@ -433,6 +434,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
 | `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
 | `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
+| `out/<film>/steps/00_align_words.csv` | **word snapshot**: input and output of `align_words`, one row per word (below) |
 | `out/<film>/changes.csv` | every line each step changed, before → after |
 | `cache/<film>/confidence.sqlite` | audio judge scores reused across runs (git-ignored, not a DVC output) |
 | `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
@@ -446,7 +448,7 @@ work outside DVC:
 
 | Option | Writes |
 |---|---|
-| `--snapshots DIR` | one CSV per step: every line's state after that step |
+| `--snapshots DIR` | one CSV per step: every line's state after that step; plus `00_align_words.csv`: both word streams merged in order, each original word with the WhisperX word(s) it matched, how (`kind`: exact, fuzzy, split, join, or unmatched), and the gap between exact runs it fell in (`gap`: `tried`, `skipped` because larger than `max_gap_cells`, or `one_sided`). The columns are described in `write_word_snapshot` |
 | `--changes FILE` | one CSV row per line a step changed: step, status and start/end before → after, how far it moved (`moved_s`), and the step's notes (e.g. `audio: whisper 0.62 vs prior 0.29`). The "before" of the first step is the original subtitle's time; a line without a time yet appears once a step gives it one |
 | `--metrics FILE` | the status counts |
 | `--params FILE` | nothing: reads tuning constants (next section) |
@@ -533,6 +535,10 @@ To choose what you *look at* in VS Code, among the films that ran:
 To add a step, write the function, call it in `align_subtitles()`, and add
 a `snapshot("<name>")` call after it. Later snapshot numbers shift by one,
 so compare snapshots by step name rather than by number across runs.
+`00_align_words.csv` is written directly, not through `snapshot()`, so it
+does not move the line snapshots' numbers. In the Plots view its
+`shift_s` is per word (the line's shift plus the word's place in the line),
+so it scatters more than the line snapshots.
 
 ### Project layout
 
