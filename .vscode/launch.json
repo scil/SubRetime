@@ -5,6 +5,10 @@
   // (git-ignored) so DVC's outputs stay as DVC wrote them. The audio cache
   // is the one `dvc repro` filled for this sample: every audio question is
   // answered from it, so the video and the GPU model are never loaded.
+  //
+  // The second configuration also sets SUBRETIME_STOPS: the run pauses
+  // inside the steps and on the lines that lab/stops.yaml lists
+  // (see dev_stops.py).
   "version": "0.2.0",
   "configurations": [
     {
@@ -15,6 +19,29 @@
       "cwd": "${workspaceFolder}/lab",
       "console": "integratedTerminal",
       "justMyCode": true,
+      "args": [
+        "films/dog-man-2025-sample-1092-1151/original.srt",
+        "films/dog-man-2025-sample-1092-1151/whisper",
+        "debug/dog-man-2025-sample-1092-1151/fixed.srt",
+        "--audio", "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4",
+        "--report", "debug/dog-man-2025-sample-1092-1151/fixed.report.csv",
+        "--snapshots", "debug/dog-man-2025-sample-1092-1151/steps",
+        "--changes", "debug/dog-man-2025-sample-1092-1151/changes.csv",
+        "--params", "params.yaml",
+        "--audio-cache", "cache/dog-man-2025-sample-1092-1151/confidence.sqlite"
+      ]
+    },
+    {
+      "name": "step through sample (stops.yaml)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/align_srt.py",
+      "cwd": "${workspaceFolder}/lab",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "SUBRETIME_STOPS": "${workspaceFolder}/lab/stops.yaml"
+      },
       "args": [
         "films/dog-man-2025-sample-1092-1151/original.srt",
         "films/dog-man-2025-sample-1092-1151/whisper",

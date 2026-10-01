@@ -16,9 +16,22 @@ matches the full film's (see "Sample films for debugging" in the README).
 3. Keep `lab/out/dog-man-2025-sample-1092-1151/steps/` open next to the
    code: each `NN_<step>.csv` is what `results` looks like after that step.
 
-`results` is a list in cue order, so cue *N* is `results[N - 1076]`. In a
-loop, a conditional breakpoint such as `r.sub.index == 1134` stops on one
-line. The Debug Console evaluates expressions at the current frame, e.g.
+`results` is a list in cue order, so cue *N* is `results[N - 1076]`.
+
+To pause without clicking breakpoints, list steps and lines in
+`lab/stops.yaml` and start **step through sample (stops.yaml)** instead:
+
+```yaml
+steps: [reject_outliers, verify_with_audio, revert_out_of_order]
+cues: [1134]
+```
+
+Each step calls `stop_for_debug(step, cue)` at the point where it decides
+about a line, the "Breakpoint" line of each section below. With that
+configuration (it sets `SUBRETIME_STOPS`), the call pauses there for the
+listed steps and lines; F5 goes on to the next one. Restart the debugger
+after editing the file. Elsewhere, a conditional breakpoint such as
+`r.sub.index == 1134` stops on one line. The Debug Console evaluates expressions at the current frame, e.g.
 `[(r.sub.index, r.status, r.offset) for r in results[16:30]]`.
 
 ## Steps

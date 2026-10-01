@@ -35,6 +35,13 @@ from pathlib import Path
 import srt
 from rapidfuzz import fuzz
 
+try:
+    # Development: pause in the debugger at chosen steps (see dev_stops.py).
+    from dev_stops import stop_for_debug
+except ImportError:
+    def stop_for_debug(step, cue=None):
+        pass
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -215,6 +222,7 @@ def align_words(orig: list[str], new: list[str], min_sim=0.75,
             status = "skipped"
         else:
             status = "tried"
+            stop_for_debug("align_words")
             for gi, gj0, gj1 in _fuzzy_gap(gap_a, gap_b, min_sim):
                 mapping[prev_i + gi] = (prev_j + gj0, prev_j + gj1)
         if trace is not None and (gap_a or gap_b):
@@ -315,6 +323,7 @@ def time_cues(original, orig_owner, mapping, new_words, word_dur=0.3,
                     if nj_last + 1 < len(new_words) else end + trail * word_dur)
             end = min(ceil, end + trail * word_dur)
 
+        stop_for_debug("time_cues", r.sub.index)
         r.start, r.end = start, max(end, start)
         r.offset = start - r.sub.start.total_seconds()
         r.first_j, r.last_j = nj_first, nj_last
@@ -352,6 +361,7 @@ def reject_outliers(results, strong_dev=1.5, weak_dev=1.0, window=8):
         local = statistics.median(neighbours)
         r = results[i]
         limit = strong_dev if _is_strong(r) else weak_dev
+        stop_for_debug("reject_outliers", r.sub.index)
         if abs(r.offset - local) > limit:
             r.status = "outlier"
             r.candidate = (r.start, r.end, r.first_j, r.last_j, r.matched_text)
@@ -380,6 +390,7 @@ def interpolate_missing(results, side=3):
         near = anchored[max(0, k - side):k + side]
         offset = statistics.median(results[j].offset for j in near)
 
+        stop_for_debug("interpolate_missing", r.sub.index)
         r.start = r.sub.start.total_seconds() + offset
         r.end = r.sub.end.total_seconds() + offset
         r.status = "interpolated" if r.status == "none" else r.status
@@ -400,6 +411,7 @@ def revert_out_of_order(results, tolerance=1.0):
         before = results[max(0, i - 2):i]
         late = len(after) == 2 and all(n.start < r.start - tolerance for n in after)
         early = len(before) == 2 and all(p.start > r.start + tolerance for p in before)
+        stop_for_debug("revert_out_of_order", r.sub.index)
         if late or early:
             r.notes.append(f"{r.status} but out of order, reverted")
             r.status = "outlier"
@@ -516,6 +528,7 @@ def verify_with_audio(results, judge, min_margin=0.05):
         whisper_conf = judge.confidence(text, c_start, duration)
         prior_conf = judge.confidence(text, r.start, duration)
         r.notes.append(f"audio: whisper {whisper_conf:.2f} vs prior {prior_conf:.2f}")
+        stop_for_debug("verify_with_audio", r.sub.index)
         if whisper_conf >= prior_conf + min_margin:
             r.status = "verified"
             r.start, r.end = c_start, c_end
@@ -565,6 +578,7 @@ def rescue_local(results, new_words, judge=None, time_window=1.5, min_score=85):
                 if best is None or key > best[0]:
                     best = (key, j, j + length - 1)
 
+        stop_for_debug("rescue_local", r.sub.index)
         if best and best[0][0] >= min_score:
             _, j0, j1 = best
             text = r.sub.content.replace("\n", " ")
@@ -616,6 +630,7 @@ def finalize_timing(results, min_gap=0.084, chars_per_sec=17.0, min_dur=0.8,
             floor = prev_end + min_gap if prev_end is not None else 0.0
             r.start = min(r.start, max(floor, end - wanted, r.start - max_lead))
 
+        stop_for_debug("finalize_timing", r.sub.index)
         r.end = end
         prev_end = end
 

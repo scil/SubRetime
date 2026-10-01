@@ -430,6 +430,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
 | `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
+| `stops.yaml` | where the **step through sample** debug configuration pauses (below) |
 | `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
@@ -602,6 +603,23 @@ audio question from the cache, so the video and the GPU are never loaded.
 [`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
 where to stop and which lines to watch at each step.
 
+To pause at those points without clicking breakpoints, start **step through
+sample (stops.yaml)** instead. It sets `SUBRETIME_STOPS` to
+`lab/stops.yaml`, which lists the steps and, optionally, the lines to pause
+on:
+
+```yaml
+steps: [reject_outliers, verify_with_audio, revert_out_of_order]   # or [all]
+cues: [1134]
+```
+
+Each step of `align_srt.py` calls `stop_for_debug(step, cue)` where it
+decides about a line. The function comes from `dev_stops.py`, which calls
+`breakpoint()` when the file asks for that step and line, and does nothing
+when `SUBRETIME_STOPS` is not set (the CLI, the GUI and the pipeline never
+set it). A misspelled step name stops the run at startup. Without
+`dev_stops.py` next to it, `align_srt.py` runs as before.
+
 ### Project layout
 
 | File | Purpose |
@@ -609,6 +627,7 @@ where to stop and which lines to watch at each step.
 | `align_srt.py` | the retiming pipeline (CLI) |
 | `evaluate_timing.py` | quality check against the audio |
 | `gui.py` | Tkinter front end for `align_srt.py` |
+| `dev_stops.py` | development: pause `align_srt.py` in the debugger at the steps and lines `SUBRETIME_STOPS` lists |
 | `requirements.txt` | Python dependencies |
 | `requirements-dev.txt` | development tools (DVC) |
 | `lab/` | DVC development pipeline, test subtitles and run outputs (see [Development workflow](#development-workflow-dvc)) |
