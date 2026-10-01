@@ -431,7 +431,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `pick_films.py` | choose the films to run, in a window or on the command line |
 | `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
 | `stops.yaml` | where the **step through film** debug configuration pauses (below) |
-| `debug_film.py` | run `align_srt.py` on a film of `films.yaml` for VS Code's debugger; keeps `launch.json`'s film list in sync (below) |
+| `debug_film.py` | run `align_srt.py` on a film selected in `pick_films.py`, for VS Code's debugger (below) |
 | `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
@@ -598,22 +598,32 @@ verified → outlier).
 
 #### Stepping through a film in VS Code
 
-Run a film through the pipeline once (`python pick_films.py <film>`,
-`dvc repro`), so its transcript exists and its audio cache is filled. Then
-start one of the two configurations in VS Code's Run and Debug view
-(`.vscode/launch.json`); each asks which film of `films.yaml` to align:
+Start one of the two configurations in VS Code's Run and Debug view
+(`.vscode/launch.json`):
 
 | Configuration | Pauses |
 |---|---|
 | **step through film (stops.yaml)** (F5's default) | where `lab/stops.yaml` says (below), and at your breakpoints |
 | **align film (no stops)** | only at your breakpoints |
 
-Both run `lab/debug_film.py <film>`, which passes the align stage's
-arguments for that film, writes to `lab/debug/<film>/` (git-ignored), and
-uses the pipeline's audio cache, so the video and the GPU are never loaded.
-VS Code cannot read the list of films from a file, so `debug_film.py`
-rewrites it in `launch.json` from `films.yaml` on every run; after adding a
-film, run `python lab/debug_film.py --sync` to see it in the list at once.
+Both run `lab/debug_film.py`, which asks in the terminal which of the films
+selected in `pick_films.py` to debug:
+
+```text
+Films selected in pick_films.py:
+  1) dog-man-2025-sample-1092-1151
+  p) select other films (opens the pick_films window)
+Film to debug [1]:
+```
+
+`p` opens the `pick_films` window; tick other films, **Save selection**
+(or **Save and run dvc repro** for films that have not run yet), close
+it, and the list is asked again. A film without a transcript yet is marked
+and cannot be chosen until it has run. `debug_film.py` then passes the
+align stage's arguments for the film (from `selection.yaml`), writes to
+`lab/debug/<film>/` (git-ignored), and uses the pipeline's audio cache, so
+after one `dvc repro` of the film the video and the GPU are never loaded.
+`python lab/debug_film.py <film>` skips the question.
 [`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
 where to stop and which lines to watch at each step of the sample.
 

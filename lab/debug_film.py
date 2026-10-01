@@ -1,70 +1,78 @@
 """
-Run align_srt.py on one film of films.yaml with the align stage's
-arguments, for VS Code's debugger (.vscode/launch.json).
+Run align_srt.py on one film with the align stage's arguments, for VS
+Code's debugger (.vscode/launch.json).
 
-The film's inputs come from films.yaml: its subtitle, its video, and its
-transcript (`whisper`, or work/<film>/whisper, which the transcribe stage
-writes). Outputs go to debug/<film>/ (git-ignored), so DVC's outputs stay
-as DVC wrote them. The audio cache is the pipeline's, cache/<film>/: after
-one `dvc repro` of the film, the audio and the GPU model are not loaded.
-
-VS Code's film list (the `film` input in launch.json) cannot be read from
-a file, so this script rewrites it from films.yaml: on every run, and with
---sync alone. A film added to films.yaml appears in the list after the
-next run or `python debug_film.py --sync`.
+The films offered are the ones selected in pick_films.py (selection.yaml),
+which also holds each film's inputs: subtitle, video and transcript.
+Asked in the terminal which one to debug, answer with its number, or `p`
+to open the pick_films window and select others (run them there with
+"Save and run dvc repro" if they have not run yet). Outputs go to
+debug/<film>/ (git-ignored), so DVC's outputs stay as DVC wrote them. The
+audio cache is the pipeline's, cache/<film>/: after one `dvc repro` of the
+film, the audio and the GPU model are not loaded.
 
 Usage:
-  python debug_film.py dog-man-2025-sample-1092-1151
-  python debug_film.py --sync
+  python debug_film.py           # ask which selected film
+  python debug_film.py <film>    # that film, which must be selected
 """
 
-import json
 import os
-import re
 import sys
 from pathlib import Path
 
 import yaml
 
+import pick_films
+
 LAB = Path(__file__).resolve().parent
 ROOT = LAB.parent
-LAUNCH = ROOT / ".vscode" / "launch.json"
 
 
-def load_catalog():
-    with open(LAB / "films.yaml", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+def selected_films():
+    """{film: info} from selection.yaml, `whisper` filled in by pick_films."""
+    if not pick_films.SELECTION.exists():
+        return {}
+    with open(pick_films.SELECTION, encoding="utf-8") as f:
+        return (yaml.safe_load(f) or {}).get("films") or {}
 
 
-def sync_launch(films):
-    """
-    Make the options of the `film` input in launch.json the films.yaml ids.
-    Rewrites only that array, as text, so the file's comments stay.
-    Returns True when the file changed.
-    """
-    text = LAUNCH.read_text(encoding="utf-8")
-    pattern = re.compile(r'("id": "film",.*?"options": )\[.*?\]', re.S)
-    if not pattern.search(text):
-        raise SystemExit(f"{LAUNCH}: no `film` input with options")
-    options = "[" + ", ".join(json.dumps(f) for f in films) + "]"
-    new = pattern.sub(lambda m: m.group(1) + options, text, count=1)
-    if new == text:
-        return False
-    LAUNCH.write_text(new, encoding="utf-8", newline="\n")
-    return True
+def problem(film, info):
+    """Why the film cannot be debugged yet, or None."""
+    if not (LAB / info["whisper"]).is_dir():
+        return "no transcript yet: run dvc repro on it"
+    return None
+
+
+def ask():
+    """Ask in the terminal which selected film to debug; `p` reselects."""
+    while True:
+        films = selected_films()
+        print("\nFilms selected in pick_films.py:")
+        for n, (film, info) in enumerate(films.items(), start=1):
+            why = problem(film, info)
+            print(f"  {n}) {film}" + (f"  ({why})" if why else ""))
+        print("  p) select other films (opens the pick_films window)")
+        answer = input("Film to debug [1]: ").strip().lower() or "1"
+        if answer == "p":
+            pick_films.gui()
+            continue
+        if answer.isdigit() and 1 <= int(answer) <= len(films):
+            film = list(films)[int(answer) - 1]
+            why = problem(film, films[film])
+            if why:
+                print(f"{film}: {why} (p, then Save and run dvc repro)")
+                continue
+            return film, films[film]
+        print(f"answer a number from 1 to {len(films)}, or p")
 
 
 def align_args(film, info):
-    whisper = info.get("whisper", f"work/{film}/whisper")
-    if not (LAB / whisper).is_dir():
-        raise SystemExit(f"{whisper} missing: run the transcribe stage for "
-                         f"{film} first (pick_films.py {film}, dvc repro)")
     out = f"debug/{film}"
     cache = f"cache/{film}/confidence.sqlite"
     if not (LAB / cache).exists():
         print(f"note: {cache} not filled yet: the audio check loads the "
               f"video and the GPU model (run dvc repro on {film} to avoid it)")
-    return [info["original"], whisper, f"{out}/fixed.srt",
+    return [info["original"], info["whisper"], f"{out}/fixed.srt",
             "--audio", info["video"],
             "--report", f"{out}/fixed.report.csv",
             "--snapshots", f"{out}/steps",
@@ -74,23 +82,27 @@ def align_args(film, info):
 
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) > 2:
         raise SystemExit(__doc__.strip().split("Usage:")[1])
-    catalog = load_catalog()
-    if sync_launch(list(catalog)):
-        print("launch.json: film list updated from films.yaml")
-    if sys.argv[1] == "--sync":
-        return
-    film = sys.argv[1]
-    if film not in catalog:
-        raise SystemExit(f"not in films.yaml: {film}")
+    if len(sys.argv) == 2:
+        film = sys.argv[1]
+        films = selected_films()
+        if film not in films:
+            raise SystemExit(f"{film} is not selected: python pick_films.py {film}")
+        info = films[film]
+        why = problem(film, info)
+        if why:
+            raise SystemExit(f"{film}: {why}")
+    else:
+        film, info = ask()
+    print(f"\nDebugging {film}\n")
 
     # align_srt.py's paths are relative to lab/, as in dvc.yaml.
     os.chdir(LAB)
     sys.path.insert(0, str(ROOT))
     import align_srt
 
-    sys.argv = [str(ROOT / "align_srt.py")] + align_args(film, catalog[film])
+    sys.argv = [str(ROOT / "align_srt.py")] + align_args(film, info)
     align_srt.main()
 
 

@@ -11,8 +11,9 @@ matches the full film's (see "Sample films for debugging" in the README).
 1. `cd lab`, `python pick_films.py dog-man-2025-sample-1092-1151`, then
    `dvc repro`. This fills `cache/dog-man-2025-sample-1092-1151/`, so the
    debugger answers every audio question from the cache.
-2. In VS Code, Run and Debug → **align film (no stops)**, and pick
-   `dog-man-2025-sample-1092-1151` from the list (the default).
+2. In VS Code, Run and Debug → **align film (no stops)**, and answer the
+   terminal's question with the number of
+   `dog-man-2025-sample-1092-1151`.
    Outputs go to `lab/debug/dog-man-2025-sample-1092-1151/`.
 3. Keep `lab/out/dog-man-2025-sample-1092-1151/steps/` open next to the
    code: each `NN_<step>.csv` is what `results` looks like after that step.

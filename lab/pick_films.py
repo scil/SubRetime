@@ -107,6 +107,9 @@ def dvc_env():
     scripts = str(Path(sys.executable).parent)
     env["PATH"] = scripts + os.pathsep + env.get("PATH", "")
     env["PYTHONIOENCODING"] = "utf-8"
+    # Opened from debug_film.py under the debugger: the stages must not
+    # pause at an invisible pdb prompt (see dev_stops.py).
+    env.pop("SUBRETIME_STOPS", None)
     return env
 
 

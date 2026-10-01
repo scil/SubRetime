@@ -1,18 +1,17 @@
 {
-  // Step through align_srt.py on a film of lab/films.yaml, picked from a
-  // list when the run starts. lab/debug_film.py passes the DVC align
-  // stage's arguments for that film; the outputs go to lab/debug/<film>/
-  // (git-ignored) so DVC's outputs stay as DVC wrote them. After one
-  // `dvc repro` of the film, every audio question is answered from its
-  // cache, so the video and the GPU model are never loaded.
+  // Step through align_srt.py on a film selected in lab/pick_films.py.
+  // lab/debug_film.py asks in the terminal which selected film to debug
+  // (`p` opens the pick_films window to select others), then passes the
+  // DVC align stage's arguments for it; the outputs go to
+  // lab/debug/<film>/ (git-ignored) so DVC's outputs stay as DVC wrote
+  // them. After one `dvc repro` of the film, every audio question is
+  // answered from its cache, so the video and the GPU model are never
+  // loaded.
   //
   // The first configuration (F5's default) also sets SUBRETIME_STOPS: the
   // run pauses inside the steps and on the lines that lab/stops.yaml lists
-  // (see dev_stops.py); its cue numbers are the picked film's. The second
+  // (see dev_stops.py); its cue numbers are the chosen film's. The second
   // runs without pausing.
-  //
-  // The film list (inputs.film.options) is rewritten from films.yaml by
-  // lab/debug_film.py on every run, or by `python lab/debug_film.py --sync`.
   "version": "0.2.0",
   "configurations": [
     {
@@ -20,7 +19,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/lab/debug_film.py",
-      "args": ["${input:film}"],
+      "cwd": "${workspaceFolder}/lab",
       "console": "integratedTerminal",
       "justMyCode": true,
       "env": {
@@ -32,18 +31,9 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/lab/debug_film.py",
-      "args": ["${input:film}"],
+      "cwd": "${workspaceFolder}/lab",
       "console": "integratedTerminal",
       "justMyCode": true
-    }
-  ],
-  "inputs": [
-    {
-      "id": "film",
-      "type": "pickString",
-      "description": "Film to align (lab/films.yaml)",
-      "options": ["dog-man-2025", "dog-man-2025-sample-1092-1151", "ann-droid-s01e01"],
-      "default": "dog-man-2025-sample-1092-1151"
     }
   ]
 }
