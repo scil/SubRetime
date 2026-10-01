@@ -1,25 +1,25 @@
 # Stepping through the Dog Man sample
 
-The sample `films/dog-man-2025-sample-1075-1161/` holds cues 1075-1161 of
-Dog Man (2025): 87 lines, 282 WhisperX words, 64:17-69:23. Study cues
-1092-1151; the rest is context for the steps that look at neighbours. Every
-step's snapshot matches the full film's, except for line 1161 in
-`finalize_timing` (see "Sample films for debugging" in the README).
+The sample `films/dog-man-2025-sample-1092-1151/` is for studying cues
+1092-1151 of Dog Man (2025). `make_sample.py` added context, 8 anchored
+lines on each side, so its files hold cues 1076-1161: 86 lines, 276
+WhisperX words, 64:18-69:23. On the studied cues every step's snapshot
+matches the full film's (see "Sample films for debugging" in the README).
 
 ## Setup
 
-1. `cd lab`, `python pick_films.py dog-man-2025-sample-1075-1161`, then
-   `dvc repro`. This fills `cache/dog-man-2025-sample-1075-1161/`, so the
+1. `cd lab`, `python pick_films.py dog-man-2025-sample-1092-1151`, then
+   `dvc repro`. This fills `cache/dog-man-2025-sample-1092-1151/`, so the
    debugger answers every audio question from the cache.
-2. In VS Code, Run and Debug → **align sample (dog-man 1075-1161)**.
-   Outputs go to `lab/debug/dog-man-2025-sample-1075-1161/`.
-3. Keep `lab/out/dog-man-2025-sample-1075-1161/steps/` open next to the
+2. In VS Code, Run and Debug → **align sample (dog-man 1092-1151)**.
+   Outputs go to `lab/debug/dog-man-2025-sample-1092-1151/`.
+3. Keep `lab/out/dog-man-2025-sample-1092-1151/steps/` open next to the
    code: each `NN_<step>.csv` is what `results` looks like after that step.
 
-`results` is a list in cue order, so cue *N* is `results[N - 1075]`. In a
+`results` is a list in cue order, so cue *N* is `results[N - 1076]`. In a
 loop, a conditional breakpoint such as `r.sub.index == 1134` stops on one
 line. The Debug Console evaluates expressions at the current frame, e.g.
-`[(r.sub.index, r.status, r.offset) for r in results[17:30]]`.
+`[(r.sub.index, r.status, r.offset) for r in results[16:30]]`.
 
 ## Steps
 
@@ -29,7 +29,7 @@ snapshot of that step.
 
 ### 00 `align_words`: original words ↔ WhisperX words
 
-Inputs: `orig_tokens` (378 words of the subtitle) and `new_tokens` (the
+Inputs: `orig_tokens` (370 words of the subtitle) and `new_tokens` (the
 WhisperX words). `difflib.SequenceMatcher` finds the exact runs; each gap
 between two runs that has words on both sides goes to `_fuzzy_gap`, a small
 Needleman-Wunsch pairing that accepts `fuzz.ratio` ≥ `min_sim` and 2:1 or
@@ -37,12 +37,12 @@ Needleman-Wunsch pairing that accepts `fuzz.ratio` ≥ `min_sim` and 2:1 or
 
 | Cue | Watch |
 |---|---|
-| 1119 | "cave in" ↔ "caveman": a 2x1 gap; `_fuzzy_gap` takes the (2, 1) move, so original words 207 and 208 both map to WhisperX word 190 (`kind` = join) |
+| 1119 | "cave in" ↔ "caveman": a 2x1 gap; `_fuzzy_gap` takes the (2, 1) move, so original words 199 and 200 both map to WhisperX word 184 (`kind` = join) |
 | 1137 | "gooders" ↔ "goodness": a 2x2 gap paired by similarity (`kind` = fuzzy) |
 | 1134 | "gabba go go go go go": WhisperX heard only "gooba"; a one-sided gap (6x0) has nothing to pair |
 
 Breakpoint: the `for gi, gj0, gj1 in _fuzzy_gap(...)` line in
-`align_words`, condition `prev_i == 207` (1119) or `prev_i == 266` (1137);
+`align_words`, condition `prev_i == 199` (1119) or `prev_i == 258` (1137);
 `trace` lists every gap as it is reached.
 
 ### 01 `time_cues`: a time for every line with matched words
@@ -122,7 +122,7 @@ win the audio check.
 | Cue | Watch |
 |---|---|
 | 1102 | outlier → `rescued`, score 100: back to −0.59 s, the time step 02 rejected; near its expected time it is the only "dog man" |
-| 1140 | "Papa." `interpolated` → `rescued` at WhisperX word 237: the "papa" that step 01 gave to 1150, which is now an outlier and no longer holds it |
+| 1140 | "Papa." `interpolated` → `rescued` at WhisperX word 231: the "papa" that step 01 gave to 1150, which is now an outlier and no longer holds it |
 
 Breakpoint: `if best and best[0][0] >= min_score:`, condition
 `r.sub.index == 1140`. Look at `lo`, `hi` (the search range) and `best`.

@@ -12,15 +12,15 @@ dog-man-2025:
   original: films/dog-man-2025/original.srt
   # reference timeline for evaluate_timing.py (disputes are counted against it)
   baseline: films/dog-man-2025/ffsubsync.srt
-# Cues 1075-1161 of Dog Man, cut by make_sample.py, for stepping through
-# align_srt.py in a debugger (study 1092-1151; the rest is context).
+# Cues 1092-1151 of Dog Man to study in a debugger, cut by make_sample.py
+# with context: the files hold cues 1076-1161.
 # `whisper` points at a transcript cut from the film's: films with one skip
 # the transcribe stage.
-dog-man-2025-sample-1075-1161:
+dog-man-2025-sample-1092-1151:
   video: "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4"
-  original: films/dog-man-2025-sample-1075-1161/original.srt
-  baseline: films/dog-man-2025-sample-1075-1161/ffsubsync.srt
-  whisper: films/dog-man-2025-sample-1075-1161/whisper
+  original: films/dog-man-2025-sample-1092-1151/original.srt
+  baseline: films/dog-man-2025-sample-1092-1151/ffsubsync.srt
+  whisper: films/dog-man-2025-sample-1092-1151/whisper
 ann-droid-s01e01:
   video: "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv"
   original: films/ann-droid-s01e01/original.srt

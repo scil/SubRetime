@@ -1,10 +1,10 @@
 {
-  "anchored": 43,
+  "anchored": 42,
   "verified": 0,
   "rescued": 3,
   "outlier": 13,
   "interpolated": 28,
   "none": 0,
-  "cues": 87,
-  "cue_words_matched_pct": 71.43
+  "cues": 86,
+  "cue_words_matched_pct": 71.35
 }

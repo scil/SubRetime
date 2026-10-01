@@ -1,6 +1,6 @@
 {
   // Step through align_srt.py on the Dog Man sample (lab/films/
-  // dog-man-2025-sample-1075-1161, cut by lab/make_sample.py). Same
+  // dog-man-2025-sample-1092-1151, cut by lab/make_sample.py). Same
   // arguments as the DVC align stage, but the outputs go to lab/debug/
   // (git-ignored) so DVC's outputs stay as DVC wrote them. The audio cache
   // is the one `dvc repro` filled for this sample: every audio question is
@@ -8,7 +8,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "align sample (dog-man 1075-1161)",
+      "name": "align sample (dog-man 1092-1151)",
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/align_srt.py",
@@ -16,15 +16,15 @@
       "console": "integratedTerminal",
       "justMyCode": true,
       "args": [
-        "films/dog-man-2025-sample-1075-1161/original.srt",
-        "films/dog-man-2025-sample-1075-1161/whisper",
-        "debug/dog-man-2025-sample-1075-1161/fixed.srt",
+        "films/dog-man-2025-sample-1092-1151/original.srt",
+        "films/dog-man-2025-sample-1092-1151/whisper",
+        "debug/dog-man-2025-sample-1092-1151/fixed.srt",
         "--audio", "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4",
-        "--report", "debug/dog-man-2025-sample-1075-1161/fixed.report.csv",
-        "--snapshots", "debug/dog-man-2025-sample-1075-1161/steps",
-        "--changes", "debug/dog-man-2025-sample-1075-1161/changes.csv",
+        "--report", "debug/dog-man-2025-sample-1092-1151/fixed.report.csv",
+        "--snapshots", "debug/dog-man-2025-sample-1092-1151/steps",
+        "--changes", "debug/dog-man-2025-sample-1092-1151/changes.csv",
         "--params", "params.yaml",
-        "--audio-cache", "cache/dog-man-2025-sample-1075-1161/confidence.sqlite"
+        "--audio-cache", "cache/dog-man-2025-sample-1092-1151/confidence.sqlite"
       ]
     }
   ]

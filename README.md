@@ -559,37 +559,43 @@ so it scatters more than the line snapshots.
 #### Sample films for debugging
 
 A full film is too long to step through `align_subtitles()` in a debugger.
-`make_sample.py` cuts a range of cues out of a film that has already run,
-into a test film of its own:
+`make_sample.py` cuts the cues you want to study, plus context, out of a
+film that has already run, into a test film of its own:
 
 ```powershell
 cd lab
-python make_sample.py dog-man-2025 1075 1161
+python make_sample.py dog-man-2025 1092 1151
 ```
 
-It writes `films/dog-man-2025-sample-1075-1161/` with the cues' subtitles,
-baseline and WhisperX words, and prints the entry to add to `films.yaml`.
+The folder is named after the cues to study,
+`films/dog-man-2025-sample-1092-1151/`, but holds more: `reject_outliers`
+compares a line with the 8 anchored lines on each side (`window`), and
+`interpolate_missing` times lines from their anchored neighbours however
+far away they are, so with less context the studied lines would end up
+differently than in the full film. The script widens the cut until each
+side holds 8 lines the film still had anchored after `reject_outliers`
+(`--anchors`; the default is the larger of `window` and
+`interpolate_missing`'s `side` in `params.yaml`). For Dog Man 1092-1151
+that is cues 1076-1161. The entry it prints for `films.yaml` says so in a
+comment.
+
 Times and cue numbers stay the film's, so the sample's snapshots line up
 with the film's row by row, and the audio judge asks the same questions of
 the same video. The WhisperX words are the ones the film's word alignment
-(`00_align_words.csv`) left between the cues before and after the range,
-not the ones inside a time span: those would give the edge cues words that
+(`00_align_words.csv`) left between the cues before and after the cut, not
+the ones inside a time span: those would give the edge lines words that
 belong to their neighbours.
 
-Leave margin around the cues you want to study. `reject_outliers` compares
-a line with the 8 anchored lines on each side, and `interpolate_missing`
-times lines from their anchored neighbours however far away they are. With
-fewer, the edge lines end up differently than in the full film. The
-committed sample, cues 1075-1161 of Dog Man, is cut for studying
-1092-1151; every step's snapshot matches the full film's except on its
-last line. It covers every status change the full film has (anchored →
-outlier, none → interpolated, outlier → verified, outlier/interpolated →
-rescued, verified → outlier). After cutting a new sample, run it and
-compare its snapshots with the film's.
-
+After cutting, the script aligns the sample (with the film's audio cache)
+and compares each step's snapshot with the film's: a difference on a
+studied line is an error that asks for more `--anchors`; one on a context
+line is only reported. The committed sample matches on every studied line
+and covers every status change the full film has (anchored → outlier,
+none → interpolated, outlier → verified, outlier/interpolated → rescued,
+verified → outlier).
 To step through it, select it (`python pick_films.py
-dog-man-2025-sample-1075-1161`), run `dvc repro` once to fill its audio
-cache, then start **align sample (dog-man 1075-1161)** in VS Code's Run and
+dog-man-2025-sample-1092-1151`), run `dvc repro` once to fill its audio
+cache, then start **align sample (dog-man 1092-1151)** in VS Code's Run and
 Debug view (`.vscode/launch.json`). That configuration passes the align
 stage's arguments, writes to `lab/debug/` (git-ignored), and answers every
 audio question from the cache, so the video and the GPU are never loaded.

@@ -1,46 +1,10 @@
 {
  "segments": [
   {
-   "start": 3857.232,
+   "start": 3858.192,
    "end": 3858.512,
-   "text": " I'm in love with you, Sarah Haddo.",
+   "text": " Haddo.",
    "words": [
-    {
-     "word": "I'm",
-     "start": 3857.232,
-     "end": 3857.372,
-     "score": 0.794
-    },
-    {
-     "word": "in",
-     "start": 3857.412,
-     "end": 3857.492,
-     "score": 0.71
-    },
-    {
-     "word": "love",
-     "start": 3857.512,
-     "end": 3857.652,
-     "score": 0.861
-    },
-    {
-     "word": "with",
-     "start": 3857.672,
-     "end": 3857.752,
-     "score": 0.775
-    },
-    {
-     "word": "you,",
-     "start": 3857.792,
-     "end": 3857.892,
-     "score": 0.821
-    },
-    {
-     "word": "Sarah",
-     "start": 3857.912,
-     "end": 3858.152,
-     "score": 0.546
-    },
     {
      "word": "Haddo.",
      "start": 3858.192,
@@ -2198,42 +2162,6 @@
   }
  ],
  "word_segments": [
-  {
-   "word": "I'm",
-   "start": 3857.232,
-   "end": 3857.372,
-   "score": 0.794
-  },
-  {
-   "word": "in",
-   "start": 3857.412,
-   "end": 3857.492,
-   "score": 0.71
-  },
-  {
-   "word": "love",
-   "start": 3857.512,
-   "end": 3857.652,
-   "score": 0.861
-  },
-  {
-   "word": "with",
-   "start": 3857.672,
-   "end": 3857.752,
-   "score": 0.775
-  },
-  {
-   "word": "you,",
-   "start": 3857.792,
-   "end": 3857.892,
-   "score": 0.821
-  },
-  {
-   "word": "Sarah",
-   "start": 3857.912,
-   "end": 3858.152,
-   "score": 0.546
-  },
   {
    "word": "Haddo.",
    "start": 3858.192,
