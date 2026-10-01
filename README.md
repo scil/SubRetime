@@ -426,7 +426,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | File | Purpose |
 |---|---|
 | `dvc.yaml` | stages `transcribe`, `align`, `evaluate`, repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
-| `films.yaml` | every test film: video, subtitle, baseline (edited by hand) |
+| `films.yaml` | every test film: video, subtitle, baseline (edited by hand, or appended by `pick_films.py`'s **Choose video…**) |
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
 | `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
@@ -521,7 +521,15 @@ python pick_films.py ann-droid-s01e01    # no window: write the selection
 
 The window lists the folders in `lab/films/`; tick any number of them (**All**
 / **None** tick or clear every one). A folder that `films.yaml` does not
-describe yet is greyed out. **Save selection** writes `selection.yaml`;
+describe yet is greyed out, with a **Choose video…** button beside it: pick
+the film's video, and the window appends an entry for the folder to the end
+of `films.yaml` (as text, so the file's comments stay) and makes the row
+tickable. The folder must hold `original.srt`; if it has no `ffsubsync.srt`,
+the window offers to pick another `.srt` as the baseline, and uses
+`original.srt` if you decline or cancel. A `whisper/`
+folder inside it becomes the entry's `whisper` transcript. Paths are written
+with forward slashes and in quotes, relative to `lab/` when they are under
+it. **Save selection** writes `selection.yaml`;
 **Save and run dvc repro** also runs the pipeline and shows its output.
 The window puts its own interpreter's folder first on `PATH`, so the stages'
 `python` and `whisperx` are the ones in `.venv`, even when the window was

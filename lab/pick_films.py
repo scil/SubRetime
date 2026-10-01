@@ -12,8 +12,10 @@ Usage:
   python pick_films.py dog-man-2025 [...]    # write the selection, no window
 """
 
+import json
 import os
 import queue
+import re
 import subprocess
 import sys
 import threading
@@ -43,6 +45,35 @@ def load_selected():
         return []
     with open(SELECTION, encoding="utf-8") as f:
         return list((yaml.safe_load(f) or {}).get("films") or {})
+
+
+def yaml_path(path):
+    """A path for films.yaml: relative to lab/ when under it, forward
+    slashes, double-quoted (a JSON string is a valid YAML scalar)."""
+    path = Path(path).resolve()
+    try:
+        path = path.relative_to(LAB)
+    except ValueError:
+        pass
+    return json.dumps(path.as_posix(), ensure_ascii=False)
+
+
+def register_film(film, video, baseline):
+    """Append an entry for films/<film> to films.yaml as text, so the
+    comments in the file survive (yaml.safe_dump would drop them)."""
+    folder = FILMS / film
+    key = film if re.fullmatch(r"[\w.-]+", film) else json.dumps(film, ensure_ascii=False)
+    entry = [f"{key}:",
+             f"  video: {yaml_path(video)}",
+             f"  original: {yaml_path(folder / 'original.srt')}",
+             f"  baseline: {yaml_path(baseline)}"]
+    if (folder / "whisper").is_dir():
+        entry.append(f"  whisper: {yaml_path(folder / 'whisper')}")
+    text = CATALOG.read_text(encoding="utf-8")
+    with open(CATALOG, "a", encoding="utf-8", newline="\n") as f:
+        if text and not text.endswith("\n"):
+            f.write("\n")
+        f.write("\n".join(entry) + "\n")
 
 
 def write_selection(ids):
@@ -81,12 +112,12 @@ def dvc_env():
 
 def gui():
     import tkinter as tk
-    from tkinter import messagebox
+    from tkinter import filedialog, messagebox
 
     catalog = load_catalog()
     selected = set(load_selected())
     # One row per folder in films/, in catalog order; a folder films.yaml
-    # does not describe yet is shown but cannot be chosen.
+    # does not describe yet gets a "Choose video…" button that registers it.
     folders = sorted(p.name for p in FILMS.iterdir() if p.is_dir())
     rows = [f for f in catalog if f in folders] + [f for f in folders if f not in catalog]
 
@@ -94,32 +125,77 @@ def gui():
     root.title("SubRetime lab: films")
 
     tk.Label(root, text="Films to run (folders in lab/films/)").grid(
-        row=0, column=0, columnspan=2, padx=8, pady=(8, 2), sticky="w")
+        row=0, column=0, columnspan=3, padx=8, pady=(8, 2), sticky="w")
     checks = {}
+
+    def describe(info):
+        note = Path(str(info.get("video", ""))).name
+        if "whisper" in info:
+            note += "  (transcript cut from the film's)"
+        return note
+
+    def choose_video(film, box, var, label, button):
+        folder = FILMS / film
+        video = filedialog.askopenfilename(
+            parent=root, title=f"Video for {film}", filetypes=[
+                ("Video / audio", "*.mp4 *.mkv *.avi *.mov *.m4a *.mp3 *.wav"),
+                ("All files", "*.*")])
+        if not video:
+            return
+        if not (folder / "original.srt").is_file():
+            messagebox.showerror(
+                "Error", f"films/{film}/original.srt is missing: put the "
+                "subtitle to retime there first.", parent=root)
+            return
+        baseline = folder / "ffsubsync.srt"
+        if not baseline.is_file():
+            # Without a baseline of its own the film is evaluated against
+            # its original subtitle, unless another .srt is chosen.
+            chosen = ""
+            if messagebox.askyesno(
+                    "No baseline", f"films/{film}/ffsubsync.srt is missing. "
+                    "Choose another .srt as the baseline (the reference "
+                    "timeline for evaluate_timing.py)?\n\n"
+                    "No: use original.srt as the baseline.", parent=root):
+                chosen = filedialog.askopenfilename(
+                    parent=root, title=f"Baseline for {film}", initialdir=folder,
+                    filetypes=[("Subtitles", "*.srt"), ("All files", "*.*")])
+            baseline = chosen or folder / "original.srt"
+        register_film(film, video, baseline)
+        info = load_catalog()[film]
+        catalog[film] = info
+        checks[film] = var
+        box.configure(state="normal")
+        label.configure(text=describe(info))
+        button.destroy()
+        append(f"films.yaml: added {film}\n")
+
     for row, film in enumerate(rows, start=1):
         info = catalog.get(film)
         var = tk.BooleanVar(value=film in selected)
         box = tk.Checkbutton(root, text=film, variable=var)
         box.grid(row=row, column=0, padx=8, sticky="w")
+        label = tk.Label(root, fg="gray")
+        label.grid(row=row, column=1, padx=(2, 10), sticky="w")
         if info is None:
             box.configure(state="disabled")
-            note = "not in films.yaml"
+            label.configure(text="not in films.yaml")
+            button = tk.Button(root, text="Choose video…")
+            button.configure(command=lambda f=film, b=box, v=var, l=label, btn=button:
+                             choose_video(f, b, v, l, btn))
+            button.grid(row=row, column=2, padx=(0, 8), sticky="w")
         else:
             checks[film] = var
-            note = Path(str(info.get("video", ""))).name
-            if "whisper" in info:
-                note += "  (transcript cut from the film's)"
-        tk.Label(root, text=note, fg="gray").grid(
-            row=row, column=1, padx=(2, 10), sticky="w")
+            label.configure(text=describe(info))
 
     def check_all(value):
         for var in checks.values():
             var.set(value)
 
     buttons = tk.Frame(root)
-    buttons.grid(row=len(rows) + 1, column=0, columnspan=2, pady=8)
+    buttons.grid(row=len(rows) + 1, column=0, columnspan=3, pady=8)
     log = tk.Text(root, width=100, height=20, wrap="none", state="disabled")
-    log.grid(row=len(rows) + 2, column=0, columnspan=2, padx=8, pady=(0, 8))
+    log.grid(row=len(rows) + 2, column=0, columnspan=3, padx=8, pady=(0, 8))
 
     def append(text):
         log.configure(state="normal")
