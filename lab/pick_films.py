@@ -35,6 +35,30 @@ HEADER = """\
 """
 
 
+# Shown in the window's log area until the first log line replaces it.
+HELP = """\
+Save selection
+  Writes the ticked films to selection.yaml: the films `dvc repro` runs,
+  and the ones debug_film.py offers to debug.
+
+Save and run dvc repro
+  Saves, then runs the pipeline on the ticked films (transcribe -> align ->
+  evaluate) and shows its output here. Stages whose inputs and code have
+  not changed are skipped. It produces what debugging needs:
+    - the WhisperX transcript (without it a film cannot be debugged)
+    - the audio cache, cache/<film>/ (without it the debugger loads the
+      video and the GPU model)
+    - the step snapshots, out/<film>/steps/, to compare with while debugging
+  Wait for "exit code" before closing the window.
+
+Opened from the debugger (debug_film.py, answer p): for films that already
+ran, Save selection is enough; close the window and pick the film in the
+terminal. The pipeline never pauses at stops.yaml's stops.
+
+Choose video... adds a films/ folder that films.yaml does not describe yet.
+"""
+
+
 def load_catalog():
     with open(CATALOG, encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
@@ -199,9 +223,18 @@ def gui():
     buttons.grid(row=len(rows) + 1, column=0, columnspan=3, pady=8)
     log = tk.Text(root, width=100, height=20, wrap="none", state="disabled")
     log.grid(row=len(rows) + 2, column=0, columnspan=3, padx=8, pady=(0, 8))
+    # Until the first log line, the log area explains the buttons.
+    log.tag_configure("help", foreground="gray")
+    log.configure(state="normal")
+    log.insert(tk.END, HELP, "help")
+    log.configure(state="disabled")
+    showing_help = [True]
 
     def append(text):
         log.configure(state="normal")
+        if showing_help[0]:
+            log.delete("1.0", tk.END)
+            showing_help[0] = False
         log.insert(tk.END, text)
         log.see(tk.END)
         log.configure(state="disabled")

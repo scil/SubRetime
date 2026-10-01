@@ -533,6 +533,7 @@ folder inside it becomes the entry's `whisper` transcript. Paths are written
 with forward slashes and in quotes, relative to `lab/` when they are under
 it. **Save selection** writes `selection.yaml`;
 **Save and run dvc repro** also runs the pipeline and shows its output.
+Until the first output line, the log area explains these buttons.
 The window puts its own interpreter's folder first on `PATH`, so the stages'
 `python` and `whisperx` are the ones in `.venv`, even when the window was
 started without activating `.venv`.
