@@ -1,0 +1,16 @@
+{
+  "anchored": 395,
+  "verified": 0,
+  "rescued": 0,
+  "outlier": 0,
+  "interpolated": 83,
+  "none": 0,
+  "cues": 478,
+  "cue_words_matched_pct": 89.25,
+  "force_kept": 395,
+  "force_low_score": 63,
+  "force_out_of_order": 20,
+  "force_failed": 0,
+  "force_no_words": 0,
+  "force_unpaired": 0
+}

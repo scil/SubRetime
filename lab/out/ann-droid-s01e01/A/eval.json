@@ -10,9 +10,9 @@
     "fixed.srt": {
       "overlaps": 0,
       "out_of_order": 0,
-      "under_0.7s": 23,
-      "over_7s": 8,
-      "over_25cps": 1
+      "under_0.7s": 26,
+      "over_7s": 12,
+      "over_25cps": 3
     }
   },
   "unpaired": {
@@ -24,15 +24,15 @@
       "size": 120
     },
     "shorter": {
-      "wins": 83,
-      "size": 107
+      "wins": 90,
+      "size": 114
     }
   },
   "disputes": {
     "fixed.srt": {
-      "disputed": 1,
+      "disputed": 0,
       "wins": 0,
-      "losses": 1,
+      "losses": 0,
       "ties": 0,
       "unjudged": 0
     }

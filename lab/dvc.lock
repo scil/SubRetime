@@ -139,8 +139,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 939c634e0f487636d858d93952999a2c
-      size: 41801
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
         264-RAWR[EZTVx.to].mkv
       hash: md5
@@ -178,6 +178,12 @@ stages:
             min_score: 85
           revert_out_of_order:
             tolerance: 1.0
+          force_align:
+            max_len: 15.0
+            split_gap: 1.0
+            pad: 0.5
+            min_score: 0.5
+            min_score_short: 0.6
     outs:
     - path: out/ann-droid-s01e01/0/align.json
       hash: md5
@@ -229,7 +235,7 @@ stages:
       md5: bd3ca22f7d1012be240bff5c6e831b0c
       size: 660
   evaluate_0@ann-droid-s01e01:
-    cmd: python ../evaluate_timing.py "films/ann-droid-s01e01/ffsubsync.srt" 
+    cmd: python ../evaluate_timing.py "films/ann-droid-s01e01/original.srt" 
       out/ann-droid-s01e01/0/fixed.srt --audio "F:/Videos/Ann Droid/Ann Droid 
       S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv" --json 
       out/ann-droid-s01e01/0/eval.json --audio-cache 
@@ -237,16 +243,16 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 939c634e0f487636d858d93952999a2c
-      size: 41801
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: ../evaluate_timing.py
       hash: md5
-      md5: 08ac26ee3bd293c431adf39cbb0d0250
-      size: 6607
-    - path: films/ann-droid-s01e01/ffsubsync.srt
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
+    - path: films/ann-droid-s01e01/original.srt
       hash: md5
-      md5: 96192f86c16300a2d2352122bd7c11d0
-      size: 30673
+      md5: cbcea3a3a0ec4c52c15dfa3d460d5e90
+      size: 30880
     - path: out/ann-droid-s01e01/0/fixed.srt
       hash: md5
       md5: 4bdaabeff6c6896614d4637436a321fe
@@ -254,8 +260,8 @@ stages:
     outs:
     - path: out/ann-droid-s01e01/0/eval.json
       hash: md5
-      md5: 7d37622b4991178ad1f7b9a9a40dacb5
-      size: 658
+      md5: 3e71497582a2fea2e080f754c05c4afe
+      size: 659
   align_0@dog-man-2025-sample-1092-1151:
     cmd: python ../align_srt.py 
       "films/dog-man-2025-sample-1092-1151/original.srt" 
@@ -373,8 +379,8 @@ stages:
     deps:
     - path: flow_diagrams.py
       hash: md5
-      md5: 558e613f48be8ea29c8b19ed806521f8
-      size: 25373
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
     - path: out/dog-man-2025-sample-1092-1151/0/steps
       hash: md5
       md5: 817037d4e75b93a23f705c9307843ca2.dir
@@ -498,8 +504,8 @@ stages:
     deps:
     - path: flow_diagrams.py
       hash: md5
-      md5: 558e613f48be8ea29c8b19ed806521f8
-      size: 25373
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
     - path: out/dog-man-2025-sample-1092-1151/A/steps
       hash: md5
       md5: 91d788b5c030f2ac1d63d1d5c96e2de1.dir
@@ -590,8 +596,8 @@ stages:
     deps:
     - path: flow_diagrams.py
       hash: md5
-      md5: 558e613f48be8ea29c8b19ed806521f8
-      size: 25373
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
     - path: out/dog-man-2025/A/steps
       hash: md5
       md5: e1af5fbb977ee94659892cbc7708fc2a.dir
@@ -636,8 +642,8 @@ stages:
     deps:
     - path: flow_diagrams.py
       hash: md5
-      md5: 558e613f48be8ea29c8b19ed806521f8
-      size: 25373
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
     - path: out/dog-man-2025/0/steps
       hash: md5
       md5: 6f9998df336629647be092b5f5ad2df7.dir
@@ -648,4 +654,142 @@ stages:
       hash: md5
       md5: cc99078f686f58d1f7adecfc8f5e904f.dir
       size: 83600
+      nfiles: 4
+  diagrams_0@ann-droid-s01e01:
+    cmd: python flow_diagrams.py out/ann-droid-s01e01/0
+    deps:
+    - path: flow_diagrams.py
+      hash: md5
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
+    - path: out/ann-droid-s01e01/0/steps
+      hash: md5
+      md5: 8283f78dd09df00f06a6137c6fc2830c.dir
+      size: 570599
+      nfiles: 8
+    outs:
+    - path: out/ann-droid-s01e01/0/diagrams
+      hash: md5
+      md5: 2a37e86e53d93eee469d0835f2074540.dir
+      size: 72998
+      nfiles: 4
+  align_A@ann-droid-s01e01:
+    cmd: python ../align_srt.py "films/ann-droid-s01e01/original.srt" 
+      "films/ann-droid-s01e01/original.srt" out/ann-droid-s01e01/A/fixed.srt 
+      --force-align --audio "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP 
+      WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv" --quiet --report 
+      out/ann-droid-s01e01/A/fixed.report.csv --snapshots 
+      out/ann-droid-s01e01/A/steps --metrics out/ann-droid-s01e01/A/align.json 
+      --params params.yaml --changes out/ann-droid-s01e01/A/changes.csv 
+      --audio-cache cache/ann-droid-s01e01/confidence.sqlite
+    deps:
+    - path: ../align_srt.py
+      hash: md5
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
+    - path: F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
+        264-RAWR[EZTVx.to].mkv
+      hash: md5
+      md5: 74ff76afdc90c8fe9ad6245b3492803e
+      size: 1006960013
+    - path: films/ann-droid-s01e01/original.srt
+      hash: md5
+      md5: cbcea3a3a0ec4c52c15dfa3d460d5e90
+      size: 30880
+    params:
+      params.yaml:
+        align:
+          align_words:
+            min_sim: 0.75
+          time_cues:
+            max_word_gap: 1.5
+          reject_outliers:
+            strong_dev: 1.5
+            weak_dev: 1.0
+            window: 8
+          reject_outliers_audio:
+            strong_dev: 1.0
+            weak_dev: 1.0
+          interpolate_missing:
+            side: 3
+          verify_with_audio:
+            min_margin: 0.05
+          rescue_local:
+            time_window: 1.5
+            min_score: 85
+          revert_out_of_order:
+            tolerance: 1.0
+          force_align:
+            max_len: 15.0
+            split_gap: 1.0
+            pad: 0.5
+            min_score: 0.5
+            min_score_short: 0.6
+    outs:
+    - path: out/ann-droid-s01e01/A/align.json
+      hash: md5
+      md5: 0c11680c9421e713ef3b101747e391d7
+      size: 310
+    - path: out/ann-droid-s01e01/A/changes.csv
+      hash: md5
+      md5: 68c76d6a3dcf1ffc8ef3042f1b380ba0
+      size: 107138
+    - path: out/ann-droid-s01e01/A/fixed.report.csv
+      hash: md5
+      md5: 034aed174012821578210013292e23cd
+      size: 52315
+    - path: out/ann-droid-s01e01/A/fixed.srt
+      hash: md5
+      md5: 8f8c7399715b52402aee9b6379df1430
+      size: 32794
+    - path: out/ann-droid-s01e01/A/steps
+      hash: md5
+      md5: 36204fba0c277043710104b2b2ceb44f.dir
+      size: 565522
+      nfiles: 9
+  evaluate_A@ann-droid-s01e01:
+    cmd: python ../evaluate_timing.py "films/ann-droid-s01e01/original.srt" 
+      out/ann-droid-s01e01/A/fixed.srt --audio "F:/Videos/Ann Droid/Ann Droid 
+      S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv" --json 
+      out/ann-droid-s01e01/A/eval.json --audio-cache 
+      cache/ann-droid-s01e01/confidence.sqlite
+    deps:
+    - path: ../align_srt.py
+      hash: md5
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
+    - path: ../evaluate_timing.py
+      hash: md5
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
+    - path: films/ann-droid-s01e01/original.srt
+      hash: md5
+      md5: cbcea3a3a0ec4c52c15dfa3d460d5e90
+      size: 30880
+    - path: out/ann-droid-s01e01/A/fixed.srt
+      hash: md5
+      md5: 8f8c7399715b52402aee9b6379df1430
+      size: 32794
+    outs:
+    - path: out/ann-droid-s01e01/A/eval.json
+      hash: md5
+      md5: 89e57cd0b1da569dfaf2db3434ff584a
+      size: 660
+  diagrams_A@ann-droid-s01e01:
+    cmd: python flow_diagrams.py out/ann-droid-s01e01/A
+    deps:
+    - path: flow_diagrams.py
+      hash: md5
+      md5: 77935214d12f697793be7e0c49f4ff1d
+      size: 25663
+    - path: out/ann-droid-s01e01/A/steps
+      hash: md5
+      md5: 36204fba0c277043710104b2b2ceb44f.dir
+      size: 565522
+      nfiles: 9
+    outs:
+    - path: out/ann-droid-s01e01/A/diagrams
+      hash: md5
+      md5: 97eef92555b0369ba0383142632171fd.dir
+      size: 51882
       nfiles: 4

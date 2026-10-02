@@ -12,5 +12,11 @@ films:
     original: films/dog-man-2025-sample-1092-1151/original.srt
     baseline: films/dog-man-2025-sample-1092-1151/ffsubsync.srt
     whisper: films/dog-man-2025-sample-1092-1151/whisper
+  ann-droid-s01e01: &id002
+    video: F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv
+    original: films/ann-droid-s01e01/original.srt
+    baseline: films/ann-droid-s01e01/original.srt
+    whisper: work/ann-droid-s01e01/whisper
 transcribe:
   dog-man-2025: *id001
+  ann-droid-s01e01: *id002

@@ -24,4 +24,7 @@ dog-man-2025-sample-1092-1151:
 ann-droid-s01e01:
   video: "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv"
   original: films/ann-droid-s01e01/original.srt
-  baseline: films/ann-droid-s01e01/ffsubsync.srt
+  # ffsubsync.srt runs a median 5.3 s earlier than the speech (the audio
+  # preferred both approaches' output on 340+ of 476 lines), so the
+  # original, which both outputs stay within ~0.1 s of, is the reference.
+  baseline: films/ann-droid-s01e01/original.srt
