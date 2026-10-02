@@ -77,6 +77,16 @@ describes Approach 0 unless it says otherwise.
 - For WhisperX: an NVIDIA GPU with a CUDA build of PyTorch is strongly
   recommended; CPU works but is much slower
 - `--audio` also uses the GPU (it loads the WhisperX alignment model)
+- Approach A (`--force-align`) needs no Whisper model: it loads only the
+  alignment model (wav2vec2, about 360 MB for English), which `--audio`
+  uses too; the `whisperx` package is still required, since the alignment
+  code is in it
+
+| Downloaded on first use | Size | Approach 0 | Approach A |
+|---|---|---|---|
+| Whisper `large-v3` (transcription, by the `whisperx` command) | about 3 GB | yes | no |
+| wav2vec2 alignment model (`WAV2VEC2_ASR_BASE_960H`, into `~/.cache/torch/hub/checkpoints`) | about 360 MB | yes | yes |
+| NLTK `punkt_tab` (WhisperX's sentence splitter) | small | yes | yes |
 
 ## Installation
 
@@ -103,6 +113,10 @@ uv pip install torch==2.8.0 torchaudio==2.8.0 --index-url https://download.pytor
 
 Version pitfalls (RTX 50-series, TorchCodec, FFmpeg DLLs, encodings) are in
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
+
+Installing `whisperx` downloads no model. For Approach A only, skip
+transcription entirely: the first `align_srt.py --force-align` run fetches
+just the alignment model (see [Requirements](#requirements)).
 
 ## Usage
 
