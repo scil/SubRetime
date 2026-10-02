@@ -454,7 +454,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
 | `flow_diagrams.py` | draws `out/<film>/diagrams/`: flowchart and Sankey of the run's status flow, from its snapshots (HTML and SVG) |
 | `out/<film>/diagrams/` | output of `flow_diagrams.py` for that run (stage `diagrams`) |
-| `docs/diagrams/` | committed diagrams used by README.md: a copy of one run's `diagrams/`, plus hand-drawn state machine, swimlane and heatmap |
+| `docs/diagrams/<film>/` | committed copy of one run's `diagrams/`, embedded in README.md |
 
 Outputs other than the metrics files are git-ignored. DVC keeps them in its
 cache, one copy per run.
