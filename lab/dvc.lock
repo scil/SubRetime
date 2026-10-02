@@ -505,3 +505,123 @@ stages:
       md5: a868c908f37201f5799eff0b3011432c.dir
       size: 66364
       nfiles: 4
+  align_A@dog-man-2025:
+    cmd: python ../align_srt.py "films/dog-man-2025/original.srt" 
+      "films/dog-man-2025/original.srt" out/dog-man-2025/A/fixed.srt 
+      --force-align --audio "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
+      [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --quiet 
+      --report out/dog-man-2025/A/fixed.report.csv --snapshots 
+      out/dog-man-2025/A/steps --metrics out/dog-man-2025/A/align.json --params 
+      params.yaml --changes out/dog-man-2025/A/changes.csv --audio-cache 
+      cache/dog-man-2025/confidence.sqlite
+    deps:
+    - path: ../align_srt.py
+      hash: md5
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
+    - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
+        [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
+      hash: md5
+      md5: b24cbf59ac862394d5c58cb9ff152069
+      size: 1768566189
+    - path: films/dog-man-2025/original.srt
+      hash: md5
+      md5: 87f37b1d6b80bd6e96546bc48f7294ba
+      size: 86001
+    params:
+      params.yaml:
+        align:
+          align_words:
+            min_sim: 0.75
+          time_cues:
+            max_word_gap: 1.5
+          reject_outliers:
+            strong_dev: 1.5
+            weak_dev: 1.0
+            window: 8
+          reject_outliers_audio:
+            strong_dev: 1.0
+            weak_dev: 1.0
+          interpolate_missing:
+            side: 3
+          verify_with_audio:
+            min_margin: 0.05
+          rescue_local:
+            time_window: 1.5
+            min_score: 85
+          revert_out_of_order:
+            tolerance: 1.0
+          force_align:
+            max_len: 15.0
+            split_gap: 1.0
+            pad: 0.5
+            min_score: 0.5
+            min_score_short: 0.6
+    outs:
+    - path: out/dog-man-2025/A/align.json
+      hash: md5
+      md5: 302cb9aac85fd43a7a93f7e060541757
+      size: 316
+    - path: out/dog-man-2025/A/changes.csv
+      hash: md5
+      md5: e060b4c088b37d8a0461b8dfaf6fc670
+      size: 319782
+    - path: out/dog-man-2025/A/fixed.report.csv
+      hash: md5
+      md5: 71b6e7e26cada4c13beded08135857d8
+      size: 144706
+    - path: out/dog-man-2025/A/fixed.srt
+      hash: md5
+      md5: 6d1f87e0215c6c124a658316d03666ef
+      size: 92059
+    - path: out/dog-man-2025/A/steps
+      hash: md5
+      md5: e1af5fbb977ee94659892cbc7708fc2a.dir
+      size: 1533835
+      nfiles: 9
+  diagrams_A@dog-man-2025:
+    cmd: python flow_diagrams.py out/dog-man-2025/A
+    deps:
+    - path: flow_diagrams.py
+      hash: md5
+      md5: 558e613f48be8ea29c8b19ed806521f8
+      size: 25373
+    - path: out/dog-man-2025/A/steps
+      hash: md5
+      md5: e1af5fbb977ee94659892cbc7708fc2a.dir
+      size: 1533835
+      nfiles: 9
+    outs:
+    - path: out/dog-man-2025/A/diagrams
+      hash: md5
+      md5: 934d9075b79d97aaf92683bc5cf44d76.dir
+      size: 81982
+      nfiles: 4
+  evaluate_A@dog-man-2025:
+    cmd: python ../evaluate_timing.py "films/dog-man-2025/ffsubsync.srt" 
+      out/dog-man-2025/A/fixed.srt --audio "F:/Dog Man (2025) [1080p] [WEBRip] 
+      [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --json 
+      out/dog-man-2025/A/eval.json --audio-cache 
+      cache/dog-man-2025/confidence.sqlite
+    deps:
+    - path: ../align_srt.py
+      hash: md5
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
+    - path: ../evaluate_timing.py
+      hash: md5
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
+    - path: films/dog-man-2025/ffsubsync.srt
+      hash: md5
+      md5: fe12b64abce718ba712a9fc8a10f28e6
+      size: 85094
+    - path: out/dog-man-2025/A/fixed.srt
+      hash: md5
+      md5: 6d1f87e0215c6c124a658316d03666ef
+      size: 92059
+    outs:
+    - path: out/dog-man-2025/A/eval.json
+      hash: md5
+      md5: 7a218c8f37293c4bbce3985534df1960
+      size: 659

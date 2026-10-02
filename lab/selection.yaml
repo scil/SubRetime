@@ -2,9 +2,15 @@
 # The films that dvc.yaml runs (loaded through `vars`); `transcribe` holds
 # those without a transcript of their own.
 films:
+  dog-man-2025: &id001
+    video: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
+    original: films/dog-man-2025/original.srt
+    baseline: films/dog-man-2025/ffsubsync.srt
+    whisper: work/dog-man-2025/whisper
   dog-man-2025-sample-1092-1151:
     video: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
     original: films/dog-man-2025-sample-1092-1151/original.srt
     baseline: films/dog-man-2025-sample-1092-1151/ffsubsync.srt
     whisper: films/dog-man-2025-sample-1092-1151/whisper
-transcribe: {}
+transcribe:
+  dog-man-2025: *id001
