@@ -1,0 +1,15 @@
+{
+  "anchored": 63,
+  "verified": 0,
+  "rescued": 1,
+  "outlier": 3,
+  "interpolated": 19,
+  "none": 0,
+  "cues": 86,
+  "cue_words_matched_pct": 83.78,
+  "force_kept": 65,
+  "force_low_score": 19,
+  "force_out_of_order": 2,
+  "force_failed": 0,
+  "force_no_words": 0
+}

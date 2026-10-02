@@ -1,5 +1,9 @@
 # Lessons learned: aligning Dog Man (2025)
 
+All of this was learned building Approach 0 (WhisperX transcript matching).
+Approach A (`--force-align`) reuses its steps; §5 is why it aligns only in
+short windows and drops low-confidence lines (README, "Approach A").
+
 Original subtitle: `*.synced-by-ffsubsync.srt`, 1391 cues.
 WhisperX: `large-v3`, 1395 segments, 6362 timed words.
 

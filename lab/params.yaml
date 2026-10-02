@@ -31,3 +31,9 @@ align:
     min_score: 85            # fuzz.ratio needed to accept a local match
   revert_out_of_order:
     tolerance: 1.0           # s
+  force_align:               # Approach A only (--force-align)
+    max_len: 15.0            # s: longest window aligned at once
+    split_gap: 1.0           # s: always start a new window at a gap this long
+    pad: 0.5                 # s: added on both sides of a window
+    min_score: 0.5           # mean word confidence to keep a 3+ word line
+    min_score_short: 0.6     # the same for shorter lines

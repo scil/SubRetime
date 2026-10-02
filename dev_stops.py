@@ -18,7 +18,7 @@ not lines: it pauses at every gap that fuzzy pairing tries, whatever
 import os
 
 # The steps that call stop_for_debug, in pipeline order.
-STEPS = ("align_words", "time_cues", "reject_outliers", "interpolate_missing",
+STEPS = ("force_align", "align_words", "time_cues", "reject_outliers", "interpolate_missing",
          "verify_with_audio", "rescue_local", "revert_out_of_order",
          "finalize_timing")
 

@@ -68,10 +68,11 @@ FONTS = ("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1"
 class Run:
     def __init__(self, steps_dir):
         files, rows = [], []
-        for f in sorted(Path(steps_dir).glob("[0-9][0-9]_*.csv")):
+        # Cue snapshots only: 00_align_words.csv has one row per word, and
+        # 00_force_align.csv (--force-align) one per line of its source.
+        for f in sorted(Path(steps_dir).glob("[0-9][1-9]_*.csv")):
             with open(f, encoding="utf-8", newline="") as fh:
                 snap = list(csv.DictReader(fh))
-            # cue snapshots only; 00_align_words.csv has one row per word
             if snap and "status" in snap[0]:
                 files.append(f)
                 rows.append(snap)

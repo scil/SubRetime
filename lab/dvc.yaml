@@ -5,10 +5,19 @@
 # and out/<film>/ (git-ignored, cached by DVC per experiment), except the
 # metrics JSON files, which are committed.
 #
-# cache/<film>/confidence.sqlite remembers the audio judge's scores across
-# runs (align_srt.py --audio-cache). It is deliberately not a DVC output:
-# DVC deletes a stage's outputs before running it, which would empty the
-# cache every time. Delete the folder to start fresh.
+# Two approaches run side by side, and both outputs are kept. Both are
+# align_srt.py; they differ only in where the timed words come from:
+# - Approach 0 (stages transcribe / align / diagrams / evaluate): the
+#   WhisperX transcript; out/<film>/.
+# - Approach A (stages align_A / diagrams_A / evaluate_A): no transcript;
+#   the original subtitle's own text, force-aligned near its own times
+#   (align_srt.py --force-align); out/<film>/A/.
+#
+# cache/<film>/confidence.sqlite remembers the audio judge's scores and
+# Approach A's forced alignments across runs (align_srt.py --audio-cache).
+# It is deliberately not a DVC output: DVC deletes a stage's outputs before
+# running it, which would empty the cache every time. Delete the folder to
+# start fresh.
 vars:
   - selection.yaml
 
@@ -64,7 +73,7 @@ stages:
     # step, computed from the snapshots (see flow_diagrams.py).
     foreach: ${films}
     do:
-      cmd: python flow_diagrams.py out/${key}
+      cmd: python flow_diagrams.py out/${key} --title "${key} (Approach 0)"
       deps:
         - flow_diagrams.py
         - out/${key}/steps
@@ -85,4 +94,67 @@ stages:
         - out/${key}/fixed.srt
       metrics:
         - out/${key}/eval.json:
+            cache: false
+
+  align_A:
+    # Approach A: the same command as align, but the words come from
+    # force-aligning the original's own text near its own times instead of
+    # from a transcript. To take the text and times from ffsubsync's
+    # subtitle instead, replace the second "${item.original}" with
+    # "${item.baseline}" (but that is also evaluate's reference timeline).
+    # steps/00_force_align.csv: every line's confidence and whether its
+    # words were kept.
+    foreach: ${films}
+    do:
+      cmd: >-
+        python ../align_srt.py "${item.original}" "${item.original}"
+        out/${key}/A/fixed.srt --force-align --audio "${item.video}" --quiet
+        --report out/${key}/A/fixed.report.csv --snapshots out/${key}/A/steps
+        --metrics out/${key}/A/align.json --params params.yaml
+        --changes out/${key}/A/changes.csv
+        --audio-cache cache/${key}/confidence.sqlite
+      deps:
+        - ../align_srt.py
+        - ${item.original}
+        - ${item.video}
+      params:
+        - align
+      outs:
+        - out/${key}/A/fixed.srt
+        - out/${key}/A/fixed.report.csv
+        - out/${key}/A/changes.csv
+      metrics:
+        - out/${key}/A/align.json:
+            cache: false
+      plots:
+        - out/${key}/A/steps:
+            x: index
+            y: shift_s
+
+  diagrams_A:
+    foreach: ${films}
+    do:
+      cmd: python flow_diagrams.py out/${key}/A --title "${key} (Approach A)"
+      deps:
+        - flow_diagrams.py
+        - out/${key}/A/steps
+      outs:
+        - out/${key}/A/diagrams
+
+  evaluate_A:
+    # Same check as evaluate, on Approach A's output: A/eval.json has the
+    # same keys as eval.json, so the two compare column by column.
+    foreach: ${films}
+    do:
+      cmd: >-
+        python ../evaluate_timing.py "${item.baseline}" out/${key}/A/fixed.srt
+        --audio "${item.video}" --json out/${key}/A/eval.json
+        --audio-cache cache/${key}/confidence.sqlite
+      deps:
+        - ../evaluate_timing.py
+        - ../align_srt.py
+        - ${item.baseline}
+        - out/${key}/A/fixed.srt
+      metrics:
+        - out/${key}/A/eval.json:
             cache: false

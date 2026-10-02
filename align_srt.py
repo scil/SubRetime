@@ -17,6 +17,16 @@ Algorithm (word-level global alignment):
    between the original and WhisperX timelines.
 5. Clean up: enforce order, minimum reading time and a small gap between
    cues.
+
+That is Approach 0. Approach A (--force-align) changes only where the
+words of step 2 come from: no transcription; the text of a subtitle (the
+original itself or ffsubsync's) is force-aligned to the audio near that
+subtitle's times, as WhisperX's second stage does with Whisper's text
+(see force_align_words). Steps 3-5 are the same.
+
+Below, "WhisperX words" means the timed words of step 2, whichever
+approach produced them; so do the report's `whisper_text` column and the
+`whisper_*` columns of 00_align_words.csv.
 """
 
 import argparse
@@ -146,6 +156,123 @@ def load_whisper_words(path: Path) -> tuple[list[Word], str]:
             pos += len(t)
             words.append(Word(t, w_start, start + span * pos / total))
     return words, f"{path} (segment timestamps, interpolated)"
+
+
+# ---------------------------------------------------------------------------
+# Approach A input: forced alignment of a subtitle's own text
+# ---------------------------------------------------------------------------
+
+def _windows(times, tokens, max_len, split_gap, pad):
+    """
+    Group the lines that have words into windows aligned together; times
+    holds each line's (start, end). Returns [(lines, start, end)].
+
+    A run of lines is cut at every gap of split_gap seconds or more, then
+    at its largest gap until it spans at most max_len seconds (the model
+    reads a window's audio at once). pad seconds are added on both sides
+    for times that are a little off.
+    """
+    runs, run = [], []
+    for i, t in enumerate(tokens):
+        if not t:
+            continue
+        if run and times[i][0] - max(times[j][1] for j in run) >= split_gap:
+            runs.append(run)
+            run = []
+        run.append(i)
+    if run:
+        runs.append(run)
+
+    def span(run):
+        return max(times[i][1] for i in run) - min(times[i][0] for i in run)
+
+    chunks = []
+    while runs:
+        run = runs.pop(0)
+        if len(run) == 1 or span(run) <= max_len:
+            chunks.append(run)
+            continue
+        k = max(range(1, len(run)),
+                key=lambda k: times[run[k]][0] - times[run[k - 1]][1])
+        runs[:0] = [run[:k], run[k:]]
+
+    return [(run, max(0.0, min(times[i][0] for i in run) - pad),
+             max(times[i][1] for i in run) + pad) for run in chunks]
+
+
+# kept | low_score | out_of_order | failed | no_words; times in seconds;
+# shift_s = aligned_start - source_start (the column DVC plots).
+FORCE_HEADER = ["index", "status", "score", "words", "source_start",
+                "aligned_start", "aligned_end", "shift_s", "text"]
+
+
+def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
+                      min_score=0.5, min_score_short=0.6, min_words=3,
+                      overlap_tol=0.1):
+    """
+    Approach A: instead of transcribing, give WhisperX's second stage
+    (wav2vec2 forced alignment) the text of a subtitle, the original or
+    ffsubsync's, near that subtitle's times. Returns the words with times,
+    like load_whisper_words, so every later step is Approach 0's, plus one
+    row per source line (FORCE_HEADER) for the snapshot 00_force_align.csv.
+
+    A forced aligner cannot say "this text is not here": in a window
+    holding other speech it still returns times, and they are wrong
+    (LESSONS.md §5). So consecutive lines are aligned together, a window
+    holding the text of all the speech in it (see _windows), and a line
+    contributes no words, as if Whisper had not heard it, when
+    - low_score: its mean word confidence is under min_score, or under
+      min_score_short for lines of fewer than min_words words. Measured on
+      Dog Man by aligning every window again 3 s late: of the lines that
+      moved more than 1 s, 0.5 keeps 18% of the 3+ word ones (true
+      placements: 91%); 1-2 word lines separate poorly (0.6 keeps 16% of
+      misplaced, 64% of true);
+    - out_of_order: it starts more than overlap_tol seconds before the
+      previous kept line ends (windows overlap by their pads);
+    - failed: the aligner gave its words no times.
+    Approach 0's steps then place these lines like any line without words.
+    """
+    tokens = [tokenize(s.content) for s in source]
+    times = [(s.start.total_seconds(), s.end.total_seconds()) for s in source]
+    status = ["no_words" if not t else None for t in tokens]
+    timed, scores = {}, {}
+    for lines, lo, hi in _windows(times, tokens, max_len, split_gap, pad):
+        result = judge.align_words([w for i in lines for w in tokens[i]], lo, hi)
+        k = 0
+        for i in lines:
+            mine, k = result[k:k + len(tokens[i])], k + len(tokens[i])
+            if not any(mine):
+                status[i] = "failed"
+                continue
+            timed[i] = mine
+            scores[i] = statistics.mean(w[2] if w else 0.0 for w in mine)
+
+    words, rows, prev_end = [], [], None
+    for i, sub in enumerate(source):
+        start = end = None
+        if i in timed:
+            mine = timed[i]
+            start = next(w[0] for w in mine if w)
+            end = max(w[1] for w in mine if w)
+            limit = min_score if len(mine) >= min_words else min_score_short
+            stop_for_debug("force_align", sub.index)
+            if scores[i] < limit:
+                status[i] = "low_score"
+            elif prev_end is not None and start < prev_end - overlap_tol:
+                status[i] = "out_of_order"
+            else:
+                status[i] = "kept"
+                prev_end = end
+                words.extend(Word(t, w[0], w[1]) for t, w in zip(tokens[i], mine) if w)
+        rows.append([sub.index, status[i],
+                     f"{scores[i]:.3f}" if i in scores else "", len(tokens[i]),
+                     f"{times[i][0]:.3f}",
+                     "" if start is None else f"{start:.3f}",
+                     "" if end is None else f"{end:.3f}",
+                     "" if start is None else f"{start - times[i][0]:+.3f}",
+                     sub.content.replace("\n", " / ")])
+    words.sort(key=lambda w: w.start)  # stable: ties keep the text order
+    return words, rows
 
 
 # ---------------------------------------------------------------------------
@@ -440,10 +567,14 @@ class AudioJudge:
     duration and pad. The audio and the model load only on the first
     question the cache cannot answer, so a rerun that asks the same
     questions skips them. Bump CACHE_VERSION when confidence() changes.
+
+    align_words() serves --force-align (Approach A) with the same model and
+    cache file (table `words`); bump WORDS_VERSION when it changes.
     """
 
     MIN_WORDS = 3
     CACHE_VERSION = 1
+    WORDS_VERSION = 1
 
     def can_judge(self, text):
         return len(tokenize(text)) >= self.MIN_WORDS
@@ -461,6 +592,8 @@ class AudioJudge:
             self.cache = sqlite3.connect(cache_path)
             self.cache.execute("CREATE TABLE IF NOT EXISTS confidence "
                                "(key TEXT PRIMARY KEY, value REAL)")
+            self.cache.execute("CREATE TABLE IF NOT EXISTS words "
+                               "(key TEXT PRIMARY KEY, value TEXT)")
             st = self.media_path.stat()
             self.cache_prefix = [self.CACHE_VERSION, str(self.media_path.resolve()),
                                  st.st_size, st.st_mtime_ns, version("whisperx"),
@@ -505,6 +638,47 @@ class AudioJudge:
         scores = [w.get("score", 0.0) for w in out["word_segments"]]
         # float(): a numpy float would not survive the SQLite round trip.
         return float(statistics.mean(scores)) if scores else 0.0
+
+    def align_words(self, words, start, end):
+        """
+        Force-align words (joined by single spaces) inside [start, end]:
+        one (start, end, score) per word, or None for a word without a
+        time; all None when the alignment failed.
+        """
+        text = " ".join(words)
+        if self.cache is None:
+            return self._align_words(text, len(words), start, end)
+        key = json.dumps(self.cache_prefix + ["words", self.WORDS_VERSION, text,
+                                              round(start, 6), round(end, 6)])
+        row = self.cache.execute("SELECT value FROM words WHERE key = ?",
+                                 (key,)).fetchone()
+        if row:
+            self.hits += 1
+            return [tuple(w) if w else None for w in json.loads(row[0])]
+        self.misses += 1
+        value = self._align_words(text, len(words), start, end)
+        self.cache.execute("INSERT OR REPLACE INTO words VALUES (?, ?)",
+                           (key, json.dumps(value)))
+        self.cache.commit()
+        return value
+
+    def _align_words(self, text, n, start, end):
+        if self.whisperx is None:
+            self._load()
+        seg = [{"start": start, "end": end, "text": text}]
+        try:
+            out = self.whisperx.align(seg, self.model, self.meta, self.audio,
+                                      self.device)
+        except Exception:
+            return [None] * n
+        got = out["word_segments"]
+        # WhisperX splits the text at spaces, so it returns one entry per
+        # word, in order; anything else means it went wrong.
+        if len(got) != n:
+            return [None] * n
+        # float(): numpy floats would not survive json.dumps.
+        return [(float(w["start"]), float(w["end"]), float(w.get("score", 0.0)))
+                if "start" in w and "end" in w else None for w in got]
 
     def cache_summary(self):
         if self.cache is None:
@@ -785,8 +959,10 @@ def cue_changes(step_name, results, before):
 
 
 def align_subtitles(original, new_words, judge=None, verbose=True,
-                    snapshot_dir=None, settings=None, changes_path=None):
+                    snapshot_dir=None, settings=None, changes_path=None,
+                    approach="0"):
     """
+    approach: "0" or "A", where new_words came from (for the summary only).
     snapshot_dir: write the per-cue state after every step as
     NN_<step>.csv there (see write_snapshot), and align_words' input and
     output as 00_align_words.csv (see write_word_snapshot).
@@ -879,12 +1055,16 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
               for s in ("anchored", "verified", "rescued", "outlier",
                         "interpolated", "none")}
     total_words = len(orig_tokens)
+    title = ("Alignment finished (Approach A: force-aligned subtitle words)"
+             if approach == "A" else
+             "Alignment finished (Approach 0: WhisperX transcript words)")
     print()
-    print("Alignment finished")
-    print("------------------")
+    print(title)
+    print("-" * len(title))
     print(f"Words matched: {len(mapping)}/{total_words} "
           f"({100 * len(mapping) / max(total_words, 1):.1f}%)")
-    print(f"Anchored:      {counts['anchored']}  (timed from WhisperX words)")
+    print(f"Anchored:      {counts['anchored']}  (timed from "
+          f"{'force-aligned' if approach == 'A' else 'WhisperX'} words)")
     if judge:
         print(f"Verified:      {counts['verified']}  (rejected anchor restored by audio check)")
     print(f"Rescued:       {counts['rescued']}  (found by local search near expected time)")
@@ -896,8 +1076,10 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
 
 
 # Steps whose keyword arguments --params may override. With --audio,
-# reject_outliers is called with its own settings (reject_outliers_audio).
+# reject_outliers is called with its own settings (reject_outliers_audio);
+# force_align is used only with --force-align.
 TUNABLE = {
+    "force_align": force_align_words,
     "align_words": align_words,
     "time_cues": time_cues,
     "reject_outliers": reject_outliers,
@@ -950,21 +1132,29 @@ def write_report(results, path):
 def main():
     parser = argparse.ArgumentParser(
         description=(
-            "Keep text from the original SRT, "
-            "but take timestamps from a WhisperX transcript."
+            "Keep text from the original SRT, but take timestamps from the "
+            "words of a WhisperX transcript (Approach 0) or, with "
+            "--force-align, from force-aligning a subtitle's own text to "
+            "the audio (Approach A)."
         )
     )
     parser.add_argument("original",
                         help="Original subtitle whose text should be preserved")
     parser.add_argument("new",
                         help="WhisperX .json or .srt (a .json next to the .srt "
-                             "is used automatically for word timestamps)")
+                             "is used automatically for word timestamps); with "
+                             "--force-align, a subtitle with roughly right "
+                             "times: the original itself or ffsubsync's")
     parser.add_argument("output", help="Output SRT filename")
     parser.add_argument("--report",
                         help="CSV report path (default: <output>.report.csv)")
     parser.add_argument("--audio",
                         help="Video/audio file: settle disputed cues by "
                              "force-aligning their text (needs whisperx, GPU)")
+    parser.add_argument("--force-align", action="store_true",
+                        help="Approach A: skip transcription; take word times "
+                             "from force-aligning the text of `new` to --audio "
+                             "near its times (needs --audio)")
     parser.add_argument("--device", default="cuda",
                         help="Device for --audio (default: cuda)")
     parser.add_argument("--quiet", action="store_true",
@@ -983,27 +1173,49 @@ def main():
                         help="SQLite file caching --audio confidence scores "
                              "across runs (development)")
     args = parser.parse_args()
+    if args.force_align and not args.audio:
+        parser.error("--force-align needs --audio")
     settings = load_settings(args.params) if args.params else None
 
     with open(args.original, "r", encoding="utf-8-sig") as f:
         original = list(srt.parse(f.read()))
 
-    new_words, source = load_whisper_words(Path(args.new))
-
-    print(f"Original subtitles: {len(original)} from {Path(args.original)}")
-    print(f"WhisperX words:     {len(new_words)} from {source}")
-    print()
-
     judge = None
     if args.audio:
-        print(f"Audio check with: {args.audio}")
         judge = AudioJudge(args.audio, device=args.device,
                            cache_path=args.audio_cache)
+
+    force_rows = None
+    if args.force_align:
+        with open(args.new, "r", encoding="utf-8-sig") as f:
+            source_subs = list(srt.parse(f.read()))
+        new_words, force_rows = force_align_words(
+            source_subs, judge, **(settings or {}).get("force_align", {}))
+        kept = sum(row[1] == "kept" for row in force_rows)
+        source = (f"{Path(args.new)} (its own text, force-aligned: "
+                  f"{kept}/{len(source_subs)} lines kept)")
+    else:
+        new_words, source = load_whisper_words(Path(args.new))
+
+    print(f"Original subtitles: {len(original)} from {Path(args.original)}")
+    print(f"{'Forced' if args.force_align else 'WhisperX'} words:"
+          f"{' ' * (6 if args.force_align else 4)}{len(new_words)} from {source}")
+    print()
+    if args.audio:
+        print(f"Audio check with: {args.audio}")
 
     results = align_subtitles(original, new_words, judge=judge,
                               verbose=not args.quiet,
                               snapshot_dir=args.snapshots, settings=settings,
-                              changes_path=args.changes)
+                              changes_path=args.changes,
+                              approach="A" if args.force_align else "0")
+    if force_rows and args.snapshots:
+        # After align_subtitles, which empties the folder first.
+        with open(Path(args.snapshots) / "00_force_align.csv", "w",
+                  encoding="utf-8", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow(FORCE_HEADER)
+            writer.writerows(force_rows)
     if judge:
         print(judge.cache_summary())
 
@@ -1032,6 +1244,10 @@ def main():
         metrics["cue_words_matched_pct"] = round(
             100 * sum(r.matched for r in results)
             / max(sum(r.words for r in results), 1), 2)
+        if force_rows:
+            # Lines of the --force-align source, by FORCE_HEADER status.
+            for s in ("kept", "low_score", "out_of_order", "failed", "no_words"):
+                metrics[f"force_{s}"] = sum(row[1] == s for row in force_rows)
         Path(args.metrics).parent.mkdir(parents=True, exist_ok=True)
         with open(args.metrics, "w", encoding="utf-8") as f:
             json.dump(metrics, f, indent=2)

@@ -6,6 +6,11 @@ lines on each side, so its files hold cues 1076-1161: 86 lines, 276
 WhisperX words, 64:18-69:23. On the studied cues every step's snapshot
 matches the full film's (see "Sample films for debugging" in the README).
 
+This walkthrough follows Approach 0 (the `align` stage, `out/<film>/`).
+With Approach A (`python debug_film.py <film> A`, outputs in `A/`) the
+lines take other paths: its words come from forced alignment, so the
+statuses below differ.
+
 ## Setup
 
 1. `cd lab`, `python pick_films.py dog-man-2025-sample-1092-1151`, then

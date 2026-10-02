@@ -4,17 +4,24 @@ Retime a subtitle line by line: keep its text, take precise times from the
 speech.
 
 SubRetime takes a subtitle whose words are right but whose timing is a bit
-off, and a WhisperX transcript of the same video, which has a timestamp for
-every spoken word. It matches the two word by word and gives each subtitle
-line the time its words are actually spoken. The text, line breaks and
-formatting (`<i>`, `♪`) are kept exactly.
+off, and finds when its words are actually spoken, in one of two ways (see
+[Approaches](#approaches)):
+
+- **Approach 0** (default): a WhisperX transcript of the same video has a
+  timestamp for every spoken word; SubRetime matches it to the subtitle
+  word by word.
+- **Approach A** (`--force-align`): no transcript; the subtitle's own text
+  is force-aligned to the audio.
+
+Each subtitle line then gets the time its words are spoken. The text, line
+breaks and formatting (`<i>`, `♪`) are kept exactly.
 
 Real example from *Dog Man* (2025): the downloaded subtitle showed a line
 a full second before it was said.
 
 ```text
-downloaded   00:03:11,674 --> 00:03:13,710   You know I got you, buddy.
-SubRetime    00:03:12,664 --> 00:03:14,265   You know I got you, buddy.
+downloaded              00:03:11,674 --> 00:03:13,710   You know I got you, buddy.
+SubRetime, Approach 0   00:03:12,664 --> 00:03:14,265   You know I got you, buddy.
 ```
 
 What it is **not**:
@@ -26,13 +33,34 @@ What it is **not**:
 The previous Chinese README is kept as [README.zh.md](README.zh.md)
 (outdated, for reference).
 
+## Approaches
+
+Two approaches exist side by side; the DVC pipeline runs both and keeps
+both outputs. Both are `align_srt.py` and share every step after the
+words have times; they differ only in where those words come from.
+WhisperX itself runs in two stages: Whisper writes the text, then a
+wav2vec2 forced aligner finds when each word of that text is spoken.
+
+| | Approach 0: transcript matching | Approach A: forced alignment (`--force-align`) |
+|---|---|---|
+| Timed words | WhisperX's: Whisper's text, wav2vec2 times | the subtitle's own text, given to WhisperX's second stage (wav2vec2) instead of Whisper's |
+| Needs | a WhisperX transcript (`--audio` optional) | `--audio`, and a subtitle with roughly right times: the original itself or ffsubsync's |
+| Weak where | the transcript differs from the subtitle, or repeats a line | the subtitle does not say exactly what is spoken (shortened lines, dropped interjections, songs); a window holding other speech still gets an answer, a wrong one (LESSONS.md §5) |
+
+Approach A therefore never aligns over a wide window: it aligns
+consecutive lines together in short windows around the subtitle's times,
+and a line whose word confidence is low contributes no words, so the
+pipeline places it like a line Whisper did not hear (see
+[Approach A](#approach-a-forced-alignment)). The rest of this README
+describes Approach 0 unless it says otherwise.
+
 ## Features
 
-- **Word-level timing** from the WhisperX `.json` (every word has a start
-  and end time).
+- **Word-level timing** from the WhisperX `.json` (Approach 0) or from
+  force-aligning the subtitle's own words (Approach A).
 - **Keeps the original text and formatting**, including italics and music
   notes.
-- **Safe fallbacks**: lines WhisperX did not hear, or timed implausibly,
+- **Safe fallbacks**: lines without timed words, or timed implausibly,
   keep the original time corrected by the local offset instead of being
   forced onto a wrong time.
 - **Optional audio check** (`--audio`): disputed lines are settled by
@@ -118,6 +146,21 @@ python evaluate_timing.py original.srt fixed.srt --audio "F:\Videos\movie.mp4"
 Then open the video and `fixed.srt` in Subtitle Edit and review the lines
 the report flags (see [Output](#output)).
 
+#### Approach A: without a transcript
+
+Skip step 1 and give `--force-align` a subtitle in place of the WhisperX
+file: its text is force-aligned to the audio near its times.
+
+```powershell
+python align_srt.py original.srt original.srt fixed-A.srt --force-align --audio "F:\Videos\movie.mp4"
+python align_srt.py original.srt movie.synced-by-ffsubsync.srt fixed-A.srt --force-align --audio "F:\Videos\movie.mp4"
+```
+
+The second argument is the original itself, or ffsubsync's subtitle when
+the original's times are off by more than about a second. The output and
+report are the same as Approach 0's. In `gui.py`, pick **A: force-align a
+subtitle**.
+
 #### GUI
 
 ```powershell
@@ -125,7 +168,10 @@ python gui.py
 ```
 
 Pick the original subtitle, the WhisperX file and the output path. Tick
-**Audio check** and pick the video to run with `--audio`. The alignment
+**Audio check** and pick the video to run with `--audio`. With
+**Approach A**, the second file is the subtitle whose text and times are
+force-aligned (the original or ffsubsync's), and the video is required
+(`--force-align --audio`). The alignment
 runs in the background, so the window stays responsive; a dialog shows the
 summary when it finishes.
 
@@ -148,6 +194,7 @@ All commands run inside `lab/`.
 | Goal | Command |
 |---|---|
 | Run what changed | `dvc repro` |
+| Run one approach only | `dvc repro evaluate` (Approach 0) or `dvc repro evaluate_A` (A) |
 | Choose the films that run | `python pick_films.py` (window) or `python pick_films.py <film id> ...` |
 | Run one selected film only, once | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
 | Current metrics | `dvc metrics show` |
@@ -175,6 +222,11 @@ charts side by side.
 - `fixed.srt`: the retimed subtitle, UTF-8.
 - `fixed.report.csv`: one row per line.
 
+Both approaches write the same files with the same columns and statuses.
+"WhisperX words" below means the timed words the line was matched with:
+the transcript's in Approach 0, the force-aligned subtitle words in
+Approach A (column names keep `whisper` for both).
+
 | Column | Meaning |
 |---|---|
 | `index` | line number in the original subtitle |
@@ -196,8 +248,52 @@ charts side by side.
 | `interpolated` | no words matched (interjections, songs); original time + local offset | long runs |
 | `none` | nothing matched anywhere; original time kept | **yes** |
 
-On *Dog Man* (1391 lines): 1105 anchored, 6 verified, 21 rescued,
-86 outliers, 173 interpolated.
+On *Dog Man* (1391 lines), Approach 0: 1105 anchored, 6 verified,
+21 rescued, 86 outliers, 173 interpolated. Approach A (original's text):
+1136 anchored, 6 verified, 8 rescued, 24 outliers, 217 interpolated.
+
+### Approach A: forced alignment
+
+With `--force-align`, `force_align_words()` replaces loading the WhisperX
+file; every later step is Approach 0's, so the output, report and statuses
+are the same. It groups consecutive lines of the given subtitle into
+windows of at most 15 s, cut at its gaps (`_windows`), adds 0.5 s on each
+side, and aligns each window's text with `AudioJudge.align_words` (the
+WhisperX alignment model `--audio` already loads; answers go to the same
+`--audio-cache`). A line contributes no words when:
+
+| Status in `00_force_align.csv` | Meaning |
+|---|---|
+| `kept` | its words go to the pipeline |
+| `low_score` | mean word confidence under 0.5 (0.6 for lines under 3 words) |
+| `out_of_order` | starts before the previous kept line ends (windows overlap by their padding) |
+| `failed` | the aligner returned no times |
+| `no_words` | nothing to align (`♪`) |
+
+Such a line is then placed like one Whisper did not hear: interpolated
+from its neighbours' offset, or found again by `rescue_local`.
+
+Measured on *Dog Man* (1391 lines):
+
+- Score as a detector: every window was aligned again 3 s late. Of the
+  3+ word lines that moved more than 1 s, the threshold 0.5 keeps 18%,
+  and it keeps 91% of correctly placed lines; the true placement scored
+  higher for 634 of 665. For 1-2 word lines the score separates poorly
+  (0.6 keeps 16% of misplaced, 64% of correct), as the audio judge does
+  (LESSONS.md §5).
+- On lines Approach 0 anchored, forced alignment of the subtitle's text
+  near Approach 0's times starts 0.01 s (median) from Approach 0, and
+  under 0.23 s for 90% of lines: both are wav2vec2 word times.
+- Audio test against ffsubsync (lines starting more than 1 s apart):
+
+  | Words from | Kept lines | Disputed | Wins | Losses | Ties | Unjudged |
+  |---|---|---|---|---|---|---|
+  | Approach 0: WhisperX transcript | – | 19 | 3 | 3 | 4 | 9 |
+  | Approach A: original's text and times | 1160 | 14 | 4 | 4 | 2 | 4 |
+  | Approach A: ffsubsync's text and times | 1170 | 16 | 6 | 2 | 1 | 7 |
+
+  The ffsubsync row is not independent: ffsubsync is also the reference
+  the disputes are counted against. The DVC pipeline uses the original.
 
 ## Development
 
@@ -233,7 +329,10 @@ or rejected.
 
 ### Pipeline
 
-`align_subtitles()` in `align_srt.py` runs these steps in order:
+`align_subtitles()` in `align_srt.py` runs these steps in order, for both
+approaches. Before them, Approach A makes the timed words by forced
+alignment (`force_align_words`, snapshot `00_force_align.csv`); Approach
+0 loads them from the WhisperX `.json` (`load_whisper_words`).
 
 | # | Step | Function | Kind |
 |---|---|---|---|
@@ -274,7 +373,9 @@ python flow_diagrams.py out/dog-man-2025 --out docs/diagrams/dog-man-2025 --titl
 
 ### Key constants
 
-These are the real knobs. Each value was chosen by measurement on
+These are the real knobs, measured with Approach 0 and shared by Approach A
+(whose own constants are under [Approach A](#approach-a-forced-alignment)).
+Each value was chosen by measurement on
 *Dog Man* (see LESSONS.md); change one only with `evaluate_timing.py`
 before and after. For development, most of them can be overridden without
 editing code: `align_srt.py --params FILE` reads the `align` section of a
@@ -400,7 +501,9 @@ These steps assume the normal [Installation](#installation) above is done
    ```
 
    Each selected film gets its own stages: `transcribe@<film id>`,
-   `align@<film id>`, `diagrams@<film id>` and `evaluate@<film id>`.
+   `align@<film id>`, `diagrams@<film id>` and `evaluate@<film id>`
+   (Approach 0), and `align_A@<film id>`, `diagrams_A@<film id>` and
+   `evaluate_A@<film id>` (Approach A, which needs no transcript).
 
 7. Optional: reuse an existing WhisperX transcript instead of spending
    about 10 minutes per film on the transcribe stage. Copy its `.json` into
@@ -432,14 +535,14 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 
 | File | Purpose |
 |---|---|
-| `dvc.yaml` | stages `transcribe`, `align`, `diagrams`, `evaluate`, repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
+| `dvc.yaml` | stages `transcribe`, `align`, `diagrams`, `evaluate` (Approach 0) and `align_A`, `diagrams_A`, `evaluate_A` (Approach A), repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
 | `films.yaml` | every test film: video, subtitle, baseline (edited by hand, or appended by `pick_films.py`'s **Choose video…**) |
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
 | `make_sample.py` | cut a few minutes of a film into a sample film, for the debugger (below) |
 | `stops.yaml` | where the **step through film** debug configuration pauses (below) |
 | `debug_film.py` | run `align_srt.py` on a film selected in `pick_films.py`, for VS Code's debugger (below) |
-| `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` |
+| `params.yaml` | WhisperX settings and `align_srt.py` tuning constants used by `dvc.yaml` (`align.force_align`: Approach A only) |
 | `dvc.lock` | hashes of each stage's inputs and outputs from the last run (committed; DVC maintains it) |
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
 | `films/<sample>/whisper/` | a sample's WhisperX `.json`, cut from its film's (committed) |
@@ -448,7 +551,8 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
 | `out/<film>/steps/00_align_words.csv` | **word snapshot**: input and output of `align_words`, one row per word (below) |
 | `out/<film>/changes.csv` | every line each step changed, before → after |
-| `cache/<film>/confidence.sqlite` | audio judge scores reused across runs (git-ignored, not a DVC output) |
+| `out/<film>/A/` | Approach A: the same files as `out/<film>/` (`fixed.srt`, report, `steps/`, `changes.csv`, `diagrams/`, `align.json`, `eval.json`), plus `steps/00_force_align.csv`: each line's confidence and whether its words were kept; `align.json` adds `force_<status>` counts |
+| `cache/<film>/confidence.sqlite` | audio judge scores and Approach A's forced alignments, reused across runs (git-ignored, not a DVC output) |
 | `debug/<film>/` | outputs of the VS Code debug configuration (git-ignored) |
 | `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
 | `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
@@ -618,13 +722,14 @@ Start one of the two configurations in VS Code's Run and Debug view
 | **align film (no stops)** | only at your breakpoints |
 
 Both run `lab/debug_film.py`, which asks in the terminal which of the films
-selected in `pick_films.py` to debug:
+selected in `pick_films.py` to debug, and with which approach:
 
 ```text
 Films selected in pick_films.py:
   1) dog-man-2025-sample-1092-1151
   p) select other films (opens the pick_films window)
 Film to debug [1]:
+Approach: 0 = WhisperX transcript, A = force-align the subtitle [0]:
 ```
 
 `p` opens the `pick_films` window; tick other films and press **Save
@@ -632,11 +737,13 @@ selection** (or **Save and run dvc repro** for films that have not run
 yet). Saving closes the window (a run, once it ends with exit code 0;
 a failed run leaves it open to read), and the list is asked again.
 Closing the window by hand does the same without saving. A film without a transcript yet is marked
-and cannot be chosen until it has run. `debug_film.py` then passes the
-align stage's arguments for the film (from `selection.yaml`), writes to
-`lab/debug/<film>/` (git-ignored), and uses the pipeline's audio cache, so
-after one `dvc repro` of the film the video and the GPU are never loaded.
-`python lab/debug_film.py <film>` skips the question.
+and cannot be chosen for Approach 0 until it has run. `debug_film.py` then
+passes the `align` stage's arguments for the film (from `selection.yaml`),
+or `align_A`'s for Approach A, writes to `lab/debug/<film>/` (Approach A:
+`lab/debug/<film>/A/`; git-ignored), and uses the pipeline's audio cache,
+so after one `dvc repro` of the film the video and the GPU are never
+loaded. `python lab/debug_film.py <film>` (Approach 0) or
+`python lab/debug_film.py <film> A` skips the questions.
 [`lab/docs/sample-walkthrough.md`](lab/docs/sample-walkthrough.md) says
 where to stop and which lines to watch at each step of the sample.
 
@@ -662,7 +769,7 @@ every listed step pauses on every line.
 
 | File | Purpose |
 |---|---|
-| `align_srt.py` | the retiming pipeline (CLI) |
+| `align_srt.py` | the retiming pipeline (CLI): Approach 0, or Approach A with `--force-align` |
 | `evaluate_timing.py` | quality check against the audio |
 | `gui.py` | Tkinter front end for `align_srt.py` |
 | `dev_stops.py` | development: pause `align_srt.py` in the debugger at the steps and lines `SUBRETIME_STOPS` lists |

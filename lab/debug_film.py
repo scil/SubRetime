@@ -1,19 +1,22 @@
 """
-Run align_srt.py on one film with the align stage's arguments, for VS
-Code's debugger (.vscode/launch.json).
+Run align_srt.py on one film with the align stage's arguments (Approach
+0) or the align_A stage's (Approach A, --force-align), for VS Code's
+debugger (.vscode/launch.json).
 
 The films offered are the ones selected in pick_films.py (selection.yaml),
 which also holds each film's inputs: subtitle, video and transcript.
 Asked in the terminal which one to debug, answer with its number, or `p`
 to open the pick_films window and select others (run them there with
-"Save and run dvc repro" if they have not run yet). Outputs go to
-debug/<film>/ (git-ignored), so DVC's outputs stay as DVC wrote them. The
-audio cache is the pipeline's, cache/<film>/: after one `dvc repro` of the
-film, the audio and the GPU model are not loaded.
+"Save and run dvc repro" if they have not run yet); then which approach.
+Outputs go to debug/<film>/ (Approach A: debug/<film>/A/, git-ignored),
+so DVC's outputs stay as DVC wrote them. The audio cache is the
+pipeline's, cache/<film>/: after one `dvc repro` of the film, the audio
+and the GPU model are not loaded.
 
 Usage:
-  python debug_film.py           # ask which selected film
-  python debug_film.py <film>    # that film, which must be selected
+  python debug_film.py              # ask which selected film and approach
+  python debug_film.py <film>       # that film (must be selected), Approach 0
+  python debug_film.py <film> A     # that film, Approach A
 """
 
 import os
@@ -36,15 +39,30 @@ def selected_films():
         return (yaml.safe_load(f) or {}).get("films") or {}
 
 
-def problem(film, info):
+APPROACHES = ("0", "A")
+
+
+def problem(film, info, approach="0"):
     """Why the film cannot be debugged yet, or None."""
-    if not (LAB / info["whisper"]).is_dir():
-        return "no transcript yet: run dvc repro on it"
+    if approach == "0" and not (LAB / info["whisper"]).is_dir():
+        return "no transcript yet for Approach 0: run dvc repro on it"
     return None
 
 
+def ask_approach():
+    while True:
+        answer = input("Approach: 0 = WhisperX transcript, "
+                       "A = force-align the subtitle [0]: ").strip().upper() or "0"
+        if answer in APPROACHES:
+            return answer
+        print("answer 0 or A")
+
+
 def ask():
-    """Ask in the terminal which selected film to debug; `p` reselects."""
+    """
+    Ask in the terminal which selected film and approach to debug; `p`
+    reselects films.
+    """
     while True:
         films = selected_films()
         print("\nFilms selected in pick_films.py:")
@@ -58,21 +76,30 @@ def ask():
             continue
         if answer.isdigit() and 1 <= int(answer) <= len(films):
             film = list(films)[int(answer) - 1]
-            why = problem(film, films[film])
+            approach = ask_approach()
+            why = problem(film, films[film], approach)
             if why:
                 print(f"{film}: {why} (p, then Save and run dvc repro)")
                 continue
-            return film, films[film]
+            return film, films[film], approach
         print(f"answer a number from 1 to {len(films)}, or p")
 
 
-def align_args(film, info):
-    out = f"debug/{film}"
+def align_args(film, info, approach="0"):
     cache = f"cache/{film}/confidence.sqlite"
     if not (LAB / cache).exists():
         print(f"note: {cache} not filled yet: the audio check loads the "
               f"video and the GPU model (run dvc repro on {film} to avoid it)")
-    return [info["original"], info["whisper"], f"{out}/fixed.srt",
+    if approach == "A":
+        # As in the align_A stage: the original's own text and times.
+        out = f"debug/{film}/A"
+        words = [info["original"]]
+        extra = ["--force-align"]
+    else:
+        out = f"debug/{film}"
+        words = [info["whisper"]]
+        extra = []
+    return [info["original"], *words, f"{out}/fixed.srt", *extra,
             "--audio", info["video"],
             "--report", f"{out}/fixed.report.csv",
             "--snapshots", f"{out}/steps",
@@ -82,27 +109,29 @@ def align_args(film, info):
 
 
 def main():
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 3 or (len(sys.argv) == 3
+                             and sys.argv[2].upper() not in APPROACHES):
         raise SystemExit(__doc__.strip().split("Usage:")[1])
-    if len(sys.argv) == 2:
+    if len(sys.argv) >= 2:
         film = sys.argv[1]
+        approach = sys.argv[2].upper() if len(sys.argv) == 3 else "0"
         films = selected_films()
         if film not in films:
             raise SystemExit(f"{film} is not selected: python pick_films.py {film}")
         info = films[film]
-        why = problem(film, info)
+        why = problem(film, info, approach)
         if why:
             raise SystemExit(f"{film}: {why}")
     else:
-        film, info = ask()
-    print(f"\nDebugging {film}\n")
+        film, info, approach = ask()
+    print(f"\nDebugging {film}, Approach {approach}\n")
 
     # align_srt.py's paths are relative to lab/, as in dvc.yaml.
     os.chdir(LAB)
     sys.path.insert(0, str(ROOT))
     import align_srt
 
-    sys.argv = [str(ROOT / "align_srt.py")] + align_args(film, info)
+    sys.argv = [str(ROOT / "align_srt.py")] + align_args(film, info, approach)
     align_srt.main()
 
 
