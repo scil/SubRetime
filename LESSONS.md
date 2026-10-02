@@ -1,8 +1,9 @@
 # Lessons learned: aligning Dog Man (2025)
 
-All of this was learned building Approach 0 (WhisperX transcript matching).
-Approach A (`--force-align`) reuses its steps; §5 is why it aligns only in
-short windows and drops low-confidence lines (README, "Approach A").
+Sections 1-8 were learned building Approach 0 (WhisperX transcript
+matching). Approach A (`--force-align`) reuses its steps; §5 is why it
+aligns only in short windows and drops low-confidence lines, and §9-§10
+come from building it (README, "Approach A").
 
 Original subtitle: `*.synced-by-ffsubsync.srt`, 1391 cues.
 WhisperX: `large-v3`, 1395 segments, 6362 timed words.
@@ -14,6 +15,8 @@ WhisperX: `large-v3`, 1395 segments, 6362 timed words.
 | + trusted WhisperX | outlier rule relaxed after an invalid "referee" | audio disagreed: 34 wins, 89 losses |
 | + median interpolation, order check | rules restored and measured | 6 wins, 12 losses on 33 disputed |
 | + `--audio` verification | disputes settled by a validated audio test | 10 wins, 7 losses on 25 disputed |
+| Approach A, `English.srt` input | the subtitle's own text force-aligned; words matched again globally | 4 wins, 4 losses on 14 disputed |
+| + `word_origin` | each word passed with the subtitle word it is, no matching | 4 wins, 2 losses on 12 disputed |
 
 "Wins/losses": on cues where the output and ffsubsync start more than 1 s
 apart, how often the audio prefers the output. The other ~1360 cues agree
@@ -138,7 +141,45 @@ so the window would have frozen for the whole run and looked crashed.
   alignment model: about 76 s. Time the full path end to end before putting
   a number in help text or docs.
 
-## 9. Remaining limits
+## 9. Calibrate a confidence threshold against answers known to be wrong
+
+Approach A drops a line when the forced aligner's word confidence is low,
+but what is "low"? The scores of correct alignments alone cannot say: they
+show what to keep, not what to reject. I aligned every window a second
+time, 3 s late, so the answers were known to be wrong, and compared the
+two score distributions.
+
+The first version of that control was itself flawed (§5 again): a 15 s
+window shifted by 3 s still holds most of the same speech, so many
+"wrong" lines landed in the right place anyway and scored like correct
+ones. Only lines that actually moved more than 1 s count as wrong. With
+that, for 3+ word lines a threshold of 0.5 kept 91% of correct lines and
+18% of wrong ones; for 1-2 word lines the score barely separates them
+(0.6 keeps 64% of correct, 16% of wrong), so they get the stricter value.
+A dropped line only falls back to interpolation, so strict is cheap.
+
+**Habit:** set a threshold from two distributions, the right answers and
+answers made wrong on purpose, and check that "wrong on purpose" really
+is wrong.
+
+## 10. Do not rebuild a pairing you already know
+
+Approach A's words are the subtitle's own words, so each one's line and
+position are known. The first version still passed them through
+`align_words`, Approach 0's global matching, built for a transcript whose
+words are unknown. Lines dropped for low confidence left gaps, and the
+matcher filled them with a same-text neighbour's words: "Gooba gabba!"
+took a later line's words, 18 s away; 25 lines were mistimed in all, and
+the outlier step caught only some. That is the repeated-line failure of
+§4, reintroduced by a step the new approach did not need. Passing each
+word's origin (`word_origin`) instead cut outliers from 24 to 13 and the
+audio test went from 4-4 to 4-2.
+
+**Habit:** when reusing a pipeline for new input, ask which steps exist
+only to recover information the new input already has, and skip them;
+re-deriving known facts can only lose them.
+
+## 11. Remaining limits
 
 Measured on the current output (`English.srt` input, `--audio`):
 
