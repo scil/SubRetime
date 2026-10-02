@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How many cues each step changed, and which states it bypasses · Heatmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:   #f5f5f5;
+      --color-ink:     #2d3142;
+      --color-muted:   #4f5d75;
+      --color-accent:  #eb6c36;
+      --font-sans:     'Geist', system-ui, sans-serif;
+      --font-serif:    'Instrument Serif', 'Noto Serif', serif;
+      --font-mono:     'Geist Mono', ui-monospace, monospace;
+    }
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+    .frame { max-width: 1320px; width: 100%; min-width: 0; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.5rem;
+    }
+    h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(1.5rem, 2.4vw + 0.75rem, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+    svg { width: 100%; min-width: 1280px; display: block; }
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Heatmap · align_srt.py · dog-man-2025 · generated 2026-09-30</p>
+    <h1>How many cues each step changed, and which states it bypasses</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="cue-steps-heatmap-title cue-steps-heatmap-desc">
+        <title id="cue-steps-heatmap-title">How many cues each step changed, and which states it bypasses</title>
+        <desc id="cue-steps-heatmap-desc">Heatmap of how the seven align_srt.py steps treat cues in each state for dog-man-2025 (1391 cues, run with --audio): 01 assigns a state to all 1391 cues, 02 demotes 108 anchored cues to outlier, 03 interpolates 178 none cues and resets the timing of 108 outlier cues, 04 verifies 9, 05 rescues 21, 06 reverts 3 verified cues, and 07 only adjusts timing; states a step does not handle are shown as hatched cells.</desc>
+        <defs>
+          <pattern id="cue-steps-heatmap-hatch" width="8" height="8" patternUnits="userSpaceOnUse">
+            <path d="M0,8 L8,0 M-2,2 L2,-2 M6,10 L10,6" stroke="rgba(45,49,66,0.16)" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="#f5f5f5"/>
+        <text x="736" y="24" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Steps, in run order →</text>
+        <text x="236" y="64" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="end">State on entering the step ↓</text>
+        <text data-col="01" x="316" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">01</text>
+        <text x="316" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">time_cues</text>
+        <text data-col="02" x="456" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">02</text>
+        <text x="456" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">reject_outliers</text>
+        <text data-col="03" x="596" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">03</text>
+        <text x="596" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">interpolate_missing</text>
+        <text data-col="04" x="736" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">04</text>
+        <text x="736" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">verify_with_audio</text>
+        <text data-col="05" x="876" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">05</text>
+        <text x="876" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">rescue_local</text>
+        <text data-col="06" x="1016" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">06</text>
+        <text x="1016" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">revert_out_of_order</text>
+        <text data-col="07" x="1156" y="52" fill="#4f5d75" font-size="9" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em" text-anchor="middle">07</text>
+        <text x="1156" y="72" fill="#2d3142" font-size="10" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">finalize_timing</text>
+        <text data-row-label="(original)" x="236" y="114" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">(original)</text>
+        <text x="236" y="134" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">raw subtitles</text>
+        <rect x="248" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="01" data-value="1391" data-state="eligible" x="248" y="88" width="136" height="60" fill="rgba(45,49,66,0.65)"/>
+        <text x="316" y="116" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">1391</text>
+        <text x="316" y="134" fill="#f5f5f5" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ anchored / none</text>
+        <rect x="388" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="02" data-state="bypass" x="388" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="03" data-state="bypass" x="528" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="596" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="668" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="04" data-state="bypass" x="668" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="05" data-state="bypass" x="808" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="876" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="948" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="06" data-state="bypass" x="948" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="1016" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="1088" y="88" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="(original)" data-col="07" data-state="bypass" x="1088" y="88" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="1156" y="124" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <text data-row-label="none" x="236" y="178" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">none</text>
+        <text x="236" y="198" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">no match</text>
+        <rect x="248" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="01" data-state="bypass" x="248" y="152" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="188" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="02" data-state="bypass" x="388" y="152" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="188" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="03" data-value="178" data-state="eligible" x="528" y="152" width="136" height="60" fill="rgba(45,49,66,0.47)"/>
+        <text x="596" y="180" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">178</text>
+        <text x="596" y="198" fill="#f5f5f5" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ interpolated</text>
+        <rect x="668" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="04" data-state="bypass" x="668" y="152" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="188" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="05" data-state="bypass" x="808" y="152" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="876" y="188" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="948" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="06" data-state="bypass" x="948" y="152" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="1016" y="188" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="1088" y="152" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="none" data-col="07" data-value="0" data-state="eligible" x="1088.5" y="152.5" width="135" height="59" fill="rgba(45,49,66,0)" stroke="rgba(45,49,66,0.55)" stroke-width="1"/>
+        <text x="1156" y="180" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">0</text>
+        <text x="1156" y="198" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">none left</text>
+        <text data-row-label="anchored" x="236" y="242" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">anchored</text>
+        <text x="236" y="262" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">pinned to a match</text>
+        <rect x="248" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="01" data-state="bypass" x="248" y="216" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="252" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="02" data-value="108" data-state="eligible" data-focal="true" x="388" y="216" width="136" height="60" fill="rgba(235,108,54,0.85)" stroke="#eb6c36" stroke-width="1.2"/>
+        <text x="456" y="244" fill="#111111" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">108</text>
+        <text x="456" y="262" fill="#111111" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ outlier</text>
+        <rect x="528" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="03" data-state="bypass" x="528" y="216" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="596" y="252" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="668" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="04" data-state="bypass" x="668" y="216" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="252" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="05" data-state="bypass" x="808" y="216" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="876" y="252" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="948" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="06" data-value="0" data-state="eligible" x="948.5" y="216.5" width="135" height="59" fill="rgba(45,49,66,0)" stroke="rgba(45,49,66,0.55)" stroke-width="1"/>
+        <text x="1016" y="252" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">0</text>
+        <rect x="1088" y="216" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="anchored" data-col="07" data-value="1101" data-state="eligible" x="1088" y="216" width="136" height="60" fill="rgba(45,49,66,0.63)"/>
+        <text x="1156" y="244" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">1101</text>
+        <text x="1156" y="262" fill="#f5f5f5" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time only</text>
+        <text data-row-label="outlier" x="236" y="306" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">outlier</text>
+        <text x="236" y="326" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">off-trend match</text>
+        <rect x="248" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="01" data-state="bypass" x="248" y="280" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="316" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="02" data-state="bypass" x="388" y="280" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="316" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="03" data-value="108" data-state="eligible" x="528" y="280" width="136" height="60" fill="rgba(45,49,66,0.42)"/>
+        <text x="596" y="308" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">108</text>
+        <text x="596" y="326" fill="#f5f5f5" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time reset only</text>
+        <rect x="668" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="04" data-value="9" data-state="eligible" x="668" y="280" width="136" height="60" fill="rgba(45,49,66,0.20)"/>
+        <text x="736" y="308" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">9</text>
+        <text x="736" y="326" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ verified</text>
+        <rect x="808" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="05" data-value="16" data-state="eligible" x="808" y="280" width="136" height="60" fill="rgba(45,49,66,0.25)"/>
+        <text x="876" y="308" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">16</text>
+        <text x="876" y="326" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ rescued</text>
+        <rect x="948" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="06" data-state="bypass" x="948" y="280" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="1016" y="316" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="1088" y="280" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="outlier" data-col="07" data-value="86" data-state="eligible" x="1088" y="280" width="136" height="60" fill="rgba(45,49,66,0.40)"/>
+        <text x="1156" y="308" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">86</text>
+        <text x="1156" y="326" fill="#f5f5f5" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time only</text>
+        <text data-row-label="interpolated" x="236" y="370" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">interpolated</text>
+        <text x="236" y="390" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">time interpolated</text>
+        <rect x="248" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="01" data-state="bypass" x="248" y="344" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="380" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="02" data-state="bypass" x="388" y="344" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="380" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="03" data-state="bypass" x="528" y="344" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="596" y="380" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="668" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="04" data-state="bypass" x="668" y="344" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="380" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="05" data-value="5" data-state="eligible" x="808" y="344" width="136" height="60" fill="rgba(45,49,66,0.15)"/>
+        <text x="876" y="372" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">5</text>
+        <text x="876" y="390" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ rescued</text>
+        <rect x="948" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="06" data-state="bypass" x="948" y="344" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="1016" y="380" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="1088" y="344" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="interpolated" data-col="07" data-value="173" data-state="eligible" x="1088" y="344" width="136" height="60" fill="rgba(45,49,66,0.46)"/>
+        <text x="1156" y="372" fill="#f5f5f5" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">173</text>
+        <text x="1156" y="390" fill="#f5f5f5" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time only</text>
+        <text data-row-label="verified" x="236" y="434" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">verified</text>
+        <text x="236" y="454" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">audio-confirmed</text>
+        <rect x="248" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="01" data-state="bypass" x="248" y="408" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="444" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="02" data-state="bypass" x="388" y="408" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="444" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="03" data-state="bypass" x="528" y="408" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="596" y="444" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="668" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="04" data-state="bypass" x="668" y="408" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="444" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="05" data-state="bypass" x="808" y="408" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="876" y="444" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="948" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="06" data-value="3" data-state="eligible" x="948" y="408" width="136" height="60" fill="rgba(45,49,66,0.10)"/>
+        <text x="1016" y="436" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">3</text>
+        <text x="1016" y="454" fill="#2d3142" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">→ outlier</text>
+        <rect x="1088" y="408" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="verified" data-col="07" data-value="6" data-state="eligible" x="1088" y="408" width="136" height="60" fill="rgba(45,49,66,0.16)"/>
+        <text x="1156" y="436" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">6</text>
+        <text x="1156" y="454" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time only</text>
+        <text data-row-label="rescued" x="236" y="498" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">rescued</text>
+        <text x="236" y="518" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="end">found locally</text>
+        <rect x="248" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="01" data-state="bypass" x="248" y="472" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="316" y="508" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="388" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="02" data-state="bypass" x="388" y="472" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="456" y="508" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="528" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="03" data-state="bypass" x="528" y="472" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="596" y="508" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="668" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="04" data-state="bypass" x="668" y="472" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="736" y="508" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="808" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="05" data-state="bypass" x="808" y="472" width="136" height="60" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="876" y="508" fill="#7a8399" font-size="12" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">—</text>
+        <rect x="948" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="06" data-value="0" data-state="eligible" x="948.5" y="472.5" width="135" height="59" fill="rgba(45,49,66,0)" stroke="rgba(45,49,66,0.55)" stroke-width="1"/>
+        <text x="1016" y="508" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">0</text>
+        <rect x="1088" y="472" width="136" height="60" fill="#f5f5f5"/>
+        <rect data-row="rescued" data-col="07" data-value="21" data-state="eligible" x="1088" y="472" width="136" height="60" fill="rgba(45,49,66,0.27)"/>
+        <text x="1156" y="500" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">21</text>
+        <text x="1156" y="518" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">time only</text>
+        <line x1="24" y1="548" x2="1256" y2="548" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+        <text x="24" y="586" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif">Legend</text>
+        <text x="91.4" y="586" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif">Cues changed</text>
+        <text x="186" y="585" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="end">3</text>
+        <rect x="190" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="190" y="576" width="20" height="12" fill="rgba(45,49,66,0.10)"/>
+        <rect x="212" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="212" y="576" width="20" height="12" fill="rgba(45,49,66,0.18)"/>
+        <rect x="234" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="234" y="576" width="20" height="12" fill="rgba(45,49,66,0.26)"/>
+        <rect x="256" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="256" y="576" width="20" height="12" fill="rgba(45,49,66,0.34)"/>
+        <rect x="278" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="278" y="576" width="20" height="12" fill="rgba(45,49,66,0.41)"/>
+        <rect x="300" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="300" y="576" width="20" height="12" fill="rgba(45,49,66,0.49)"/>
+        <rect x="322" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="322" y="576" width="20" height="12" fill="rgba(45,49,66,0.57)"/>
+        <rect x="344" y="576" width="20" height="12" fill="#f5f5f5"/><rect x="344" y="576" width="20" height="12" fill="rgba(45,49,66,0.65)"/>
+        <text x="368" y="585" fill="#4f5d75" font-size="9" font-family="'Geist Mono', ui-monospace, monospace">1391</text>
+        <rect x="422.5" y="576.5" width="19" height="11" fill="none" stroke="rgba(45,49,66,0.55)" stroke-width="1"/>
+        <text x="432" y="585" fill="#2d3142" font-size="8" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">0</text>
+        <text x="450" y="586" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif">processed, 0 changed this run</text>
+        <rect x="653" y="576" width="20" height="12" fill="url(#cue-steps-heatmap-hatch)"/>
+        <text x="681" y="586" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif">— bypassed by design: step skips this state</text>
+        <rect x="967" y="576" width="20" height="12" fill="rgba(235,108,54,0.85)" stroke="#eb6c36" stroke-width="1"/>
+        <text x="995" y="586" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', system-ui, sans-serif">Focus: 02 demotes 108 anchored → outlier</text>
+        <text x="24" y="624" fill="#4f5d75" font-size="12" font-family="'Geist', system-ui, sans-serif">Cell value = cues in that state on entering the step whose state or timing the step changed; “time only” / “time reset only” = state kept, only timing changed.</text>
+        <text x="24" y="648" fill="#4f5d75" font-size="12" font-family="'Geist', system-ui, sans-serif">Cues have no state before 01, so column 01 has only the (original) row; the none cell in 07 is 0 because no none cues remain after 03.</text>
+        <text x="24" y="676" fill="#4f5d75" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.06em">SOURCE · dog-man-2025 · 1391 CUES · RUN WITH --audio · NON-FOCAL SCALE 3–1391 · LOG INK RAMP · FOCAL 108 EXCLUDED FROM SCALE</text>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

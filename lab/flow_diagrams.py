@@ -16,6 +16,7 @@ of align_srt.py, not data, and lives in CONSUMES below.
 """
 import argparse
 import csv
+import datetime
 import html
 import re
 from collections import Counter
@@ -152,7 +153,7 @@ def page(title, desc, slug, eyebrow, width, height, body, notes):
 """
 
 
-def svg_doc(title, desc, slug, width, height, body, standalone=True):
+def svg_doc(title, desc, slug, width, height, body, standalone=True, stamp=None):
     style = ""
     if standalone:
         style = f"<style>@import url('{html.escape(FONTS)}');</style>"
@@ -164,7 +165,9 @@ def svg_doc(title, desc, slug, width, height, body, standalone=True):
            f'aria-labelledby="{slug}-title {slug}-desc">\n'
            f'<title id="{slug}-title">{title}</title>\n<desc id="{slug}-desc">{desc}</desc>\n'
            f'<defs>{style}{markers}</defs>\n'
-           f'<rect width="100%" height="100%" fill="{PAPER}"/>\n' + "\n".join(body) + "\n</svg>")
+           f'<rect width="100%" height="100%" fill="{PAPER}"/>\n' + "\n".join(body)
+           + (f'\n<text x="{width - 40}" y="24" fill="{SOFT}" font-size="8" font-family="{MONO}" '
+              f'text-anchor="end">{stamp}</text>' if stamp else "") + "\n</svg>")
     return ('<?xml version="1.0" encoding="UTF-8"?>\n' + doc) if standalone else doc
 
 
@@ -435,6 +438,7 @@ def main():
     out = Path(args.out) if args.out else run_dir / "diagrams"
     out.mkdir(parents=True, exist_ok=True)
     film = args.title or run_dir.name
+    today = datetime.date.today().isoformat()
     for (b, a), n in [(k, v) for c in run.flows for k, v in c.items()]:
         assert a in run.statuses or a == "original"
     for k in range(len(run.steps)):
@@ -444,13 +448,14 @@ def main():
             f"A cue's status before and after each step is read from consecutive snapshots, "
             f"so every column adds up to {run.total}. \"re-timed\": cues the step moved without changing their status.")
     for name, draw, ttl, eyebrow in [
-        ("flowchart", flowchart, f"{film}: how {run.total} cues move through the steps", "Flowchart · align_srt.py"),
-        ("sankey", sankey, f"{film}: status flow, one column per step", "Sankey · align_srt.py"),
+        ("flowchart", flowchart, f"{film}: how {run.total} cues move through the steps", f"Flowchart · align_srt.py · generated {today}"),
+        ("sankey", sankey, f"{film}: status flow, one column per step", f"Sankey · align_srt.py · generated {today}"),
     ]:
         slug = f"{name}"
         width, height, body, desc = draw(run, ttl, slug)
         (out / f"{name}.html").write_text(page(ttl, desc, slug, eyebrow, width, height, body, [note]), encoding="utf-8")
-        (out / f"{name}.svg").write_text(svg_doc(ttl, desc, slug, width, height, body), encoding="utf-8")
+        (out / f"{name}.svg").write_text(svg_doc(ttl, desc, slug, width, height, body, stamp=f"generated {today}"),
+                                         encoding="utf-8")
     print(f"wrote {out}/flowchart.* and sankey.* ({run.total} cues, {len(run.steps)} steps)")
 
 
