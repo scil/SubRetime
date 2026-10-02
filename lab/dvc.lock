@@ -265,8 +265,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: a74ce28f28c73da352c205197f77326d
-      size: 55943
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
         [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
       hash: md5
@@ -343,12 +343,12 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: a74ce28f28c73da352c205197f77326d
-      size: 55943
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: ../evaluate_timing.py
       hash: md5
-      md5: 08ac26ee3bd293c431adf39cbb0d0250
-      size: 6607
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
     - path: films/dog-man-2025-sample-1092-1151/ffsubsync.srt
       hash: md5
       md5: bedefa54e5ec32ae13264d6ab7c191e4
@@ -395,8 +395,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: a74ce28f28c73da352c205197f77326d
-      size: 55943
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
         [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
       hash: md5
@@ -468,12 +468,12 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: a74ce28f28c73da352c205197f77326d
-      size: 55943
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: ../evaluate_timing.py
       hash: md5
-      md5: 08ac26ee3bd293c431adf39cbb0d0250
-      size: 6607
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
     - path: films/dog-man-2025-sample-1092-1151/ffsubsync.srt
       hash: md5
       md5: bedefa54e5ec32ae13264d6ab7c191e4

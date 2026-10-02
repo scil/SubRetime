@@ -35,9 +35,10 @@ def load(path):
 
 def pair_cues(baseline, subs):
     """
-    Pair cues of two timelines by normalized text, in order. ffsubsync drops
-    cues it shifts before 0:00 and strips <i> and music notes, so position
-    alone is not enough. Returns (baseline cues, matching cues).
+    Pair cues of two timelines by normalized text, in order. A timeline
+    edited by hand may have cues deleted or reworded (the test films'
+    ffsubsync.srt has <i> removed and two cues deleted), so position alone
+    is not enough. Returns (baseline cues, matching cues).
     """
     matcher = difflib.SequenceMatcher(
         None, [" ".join(tokenize(s.content)) for s in baseline],

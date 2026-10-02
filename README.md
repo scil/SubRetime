@@ -135,7 +135,7 @@ python align_srt.py original.srt "F:\Videos\whisper-output\movie.srt" fixed.srt 
 
 Use the subtitle **as downloaded**. Running ffsubsync first is only needed
 when the original is off by more than about 10–20 s or runs at a different
-speed (e.g. 25 vs 23.976 fps); it also strips `<i>` and `♪`.
+speed (e.g. 25 vs 23.976 fps).
 
 #### 3. Check the result
 
@@ -272,7 +272,7 @@ WhisperX alignment model `--audio` already loads; answers go to the same
 | `out_of_order` | starts before the previous kept line ends (windows overlap by their padding) |
 | `failed` | the aligner returned no times |
 | `no_words` | nothing to align (`♪`) |
-| `unpaired` | no line of the original has this text (when the source is ffsubsync's subtitle) |
+| `unpaired` | no line of the original has this text (a source subtitle edited by hand) |
 
 Such a line is then placed like one Whisper did not hear: interpolated
 from its neighbours' offset, or found again by `rescue_local`.

@@ -214,8 +214,9 @@ def _pair_words(orig_tokens, src_tokens):
     {(source line, word position): (original line, word position)}.
     Lines are paired by text, in order: equal lines whole, a run of
     differing lines of the same length line by line (their words by
-    difflib). Other source lines stay unpaired: ffsubsync drops lines it
-    shifts before 0:00, so the two subtitles need not have the same lines.
+    difflib). Other source lines stay unpaired. A source edited by hand
+    need not have the original's lines (the test films' ffsubsync.srt:
+    <i> removed, two lines deleted); tokenize already ignores tags.
     """
     matcher = difflib.SequenceMatcher(
         None, [" ".join(t) for t in orig_tokens],
