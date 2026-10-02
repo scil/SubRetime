@@ -267,9 +267,14 @@ def flowchart(run, title, slug):
 
     y = 112
     last = len(run.steps) - 1
+    idle = []   # steps none of whose statuses occur in this run
     for k, step in enumerate(run.steps):
         consumed = run.consumed(k)
-        assert consumed, f"step {step} has nothing to process"
+        if not consumed:
+            # e.g. verify_with_audio when no line is an outlier: every line
+            # passes by, so the step gets no box.
+            idle.append(step)
+            continue
         flows = {(b, a): n for (b, a), n in run.flows[k].items() if n}
         produced = {a for (b, a) in flows if b in consumed}
         passing = {s for s, n in run.before[k].items() if n} - consumed
@@ -332,7 +337,8 @@ def flowchart(run, title, slug):
     final = run.after[-1]
     desc = (f"Flowchart: {run.total} cues in one column per status; each status connects straight to the step "
             f"that processes it and passes by the others; final counts "
-            + ", ".join(f"{s} {final[s]}" for s in run.statuses if final[s]) + ".")
+            + ", ".join(f"{s} {final[s]}" for s in run.statuses if final[s]) + "."
+            + (f" Not drawn, nothing to process: {', '.join(idle)}." if idle else ""))
     return width, height, arrows + labels + nodes + leg, desc
 
 
