@@ -30,9 +30,9 @@
   },
   "disputes": {
     "fixed.srt": {
-      "disputed": 2,
+      "disputed": 1,
       "wins": 1,
-      "losses": 1,
+      "losses": 0,
       "ties": 0,
       "unjudged": 0
     }

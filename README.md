@@ -253,13 +253,13 @@ Approach A (column names keep `whisper` for both).
 
 On *Dog Man* (1391 lines), Approach 0: 1105 anchored, 6 verified,
 21 rescued, 86 outliers, 173 interpolated. Approach A (original's text):
-1136 anchored, 6 verified, 8 rescued, 24 outliers, 217 interpolated.
+1137 anchored, 6 verified, 5 rescued, 13 outliers, 230 interpolated.
 
 ### Approach A: forced alignment
 
 With `--force-align`, `force_align_words()` replaces loading the WhisperX
-file; every later step is Approach 0's, so the output, report and statuses
-are the same. It groups consecutive lines of the given subtitle into
+file and the word matching (step 0); steps 01–07 are Approach 0's, so the
+output, report and statuses are the same. It groups consecutive lines of the given subtitle into
 windows of at most 15 s, cut at its gaps (`_windows`), adds 0.5 s on each
 side, and aligns each window's text with `AudioJudge.align_words` (the
 WhisperX alignment model `--audio` already loads; answers go to the same
@@ -272,9 +272,18 @@ WhisperX alignment model `--audio` already loads; answers go to the same
 | `out_of_order` | starts before the previous kept line ends (windows overlap by their padding) |
 | `failed` | the aligner returned no times |
 | `no_words` | nothing to align (`♪`) |
+| `unpaired` | no line of the original has this text (when the source is ffsubsync's subtitle) |
 
 Such a line is then placed like one Whisper did not hear: interpolated
 from its neighbours' offset, or found again by `rescue_local`.
+
+Each kept word is passed on together with the original word it is
+(`word_origin`); with ffsubsync's subtitle as the source, its lines are
+first paired with the original's by text (`_pair_words`). Matching the
+words globally instead, as Approach 0 must, lost that knowledge: on
+*Dog Man* it gave 16 dropped lines the words of a kept neighbour with the
+same text ("Gooba gabba!" took a later line's words, 18 s away),
+mistiming 25 lines in all.
 
 Measured on *Dog Man* (1391 lines):
 
@@ -292,8 +301,11 @@ Measured on *Dog Man* (1391 lines):
   | Words from | Kept lines | Disputed | Wins | Losses | Ties | Unjudged |
   |---|---|---|---|---|---|---|
   | Approach 0: WhisperX transcript | – | 19 | 3 | 3 | 4 | 9 |
-  | Approach A: original's text and times | 1160 | 14 | 4 | 4 | 2 | 4 |
-  | Approach A: ffsubsync's text and times | 1170 | 16 | 6 | 2 | 1 | 7 |
+  | Approach A: original's text and times | 1160 | 12 | 4 | 2 | 2 | 4 |
+  | Approach A: ffsubsync's text and times | 1170 | 14 | 6 | 0 | 1 | 7 |
+
+  With global word matching instead of `word_origin`, the same two rows
+  were 14 / 4 / 4 / 2 / 4 and 16 / 6 / 2 / 1 / 7.
 
   The ffsubsync row is not independent: ffsubsync is also the reference
   the disputes are counted against. The DVC pipeline uses the original.
@@ -332,10 +344,13 @@ or rejected.
 
 ### Pipeline
 
-`align_subtitles()` in `align_srt.py` runs these steps in order, for both
-approaches. Before them, Approach A makes the timed words by forced
-alignment (`force_align_words`, snapshot `00_force_align.csv`); Approach
-0 loads them from the WhisperX `.json` (`load_whisper_words`).
+`align_subtitles()` in `align_srt.py` runs these steps in order. Before
+them, Approach 0 loads the timed words from the WhisperX `.json`
+(`load_whisper_words`); Approach A makes them by forced alignment
+(`force_align_words`, snapshot `00_force_align.csv`). Approach A skips
+step 0: each of its words already is a known word of the subtitle, so it
+passes that pairing in (`word_origin`) instead of matching. Steps 01–07
+are the same for both.
 
 | # | Step | Function | Kind |
 |---|---|---|---|

@@ -18,11 +18,12 @@ Algorithm (word-level global alignment):
 5. Clean up: enforce order, minimum reading time and a small gap between
    cues.
 
-That is Approach 0. Approach A (--force-align) changes only where the
-words of step 2 come from: no transcription; the text of a subtitle (the
-original itself or ffsubsync's) is force-aligned to the audio near that
-subtitle's times, as WhisperX's second stage does with Whisper's text
-(see force_align_words). Steps 3-5 are the same.
+That is Approach 0. Approach A (--force-align) changes steps 2 and 3: no
+transcription; the text of a subtitle (the original itself or ffsubsync's)
+is force-aligned to the audio near that subtitle's times, as WhisperX's
+second stage does with Whisper's text (see force_align_words). Each timed
+word then already is a known word of the original, so step 3 is skipped.
+Steps 4-5 are the same.
 
 Below, "WhisperX words" means the timed words of step 2, whichever
 approach produced them; so do the report's `whisper_text` column and the
@@ -200,21 +201,58 @@ def _windows(times, tokens, max_len, split_gap, pad):
              max(times[i][1] for i in run) + pad) for run in chunks]
 
 
-# kept | low_score | out_of_order | failed | no_words; times in seconds;
-# shift_s = aligned_start - source_start (the column DVC plots).
+# kept | low_score | out_of_order | failed | no_words | unpaired; times in
+# seconds; shift_s = aligned_start - source_start (the column DVC plots).
 FORCE_HEADER = ["index", "status", "score", "words", "source_start",
                 "aligned_start", "aligned_end", "shift_s", "text"]
+FORCE_STATUSES = ("kept", "low_score", "out_of_order", "failed", "no_words",
+                  "unpaired")
 
 
-def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
-                      min_score=0.5, min_score_short=0.6, min_words=3,
-                      overlap_tol=0.1):
+def _pair_words(orig_tokens, src_tokens):
+    """
+    {(source line, word position): (original line, word position)}.
+    Lines are paired by text, in order: equal lines whole, a run of
+    differing lines of the same length line by line (their words by
+    difflib). Other source lines stay unpaired: ffsubsync drops lines it
+    shifts before 0:00, so the two subtitles need not have the same lines.
+    """
+    matcher = difflib.SequenceMatcher(
+        None, [" ".join(t) for t in orig_tokens],
+        [" ".join(t) for t in src_tokens], autojunk=False)
+    pairs = {}
+    for op, a0, a1, b0, b1 in matcher.get_opcodes():
+        if op not in ("equal", "replace") or a1 - a0 != b1 - b0:
+            continue
+        for a, b in zip(range(a0, a1), range(b0, b1)):
+            words = difflib.SequenceMatcher(None, orig_tokens[a], src_tokens[b],
+                                            autojunk=False)
+            for m in words.get_matching_blocks():
+                for k in range(m.size):
+                    pairs[(b, m.b + k)] = (a, m.a + k)
+    return pairs
+
+
+def force_align_words(source, judge, original=None, max_len=15.0,
+                      split_gap=1.0, pad=0.5, min_score=0.5,
+                      min_score_short=0.6, min_words=3, overlap_tol=0.1):
     """
     Approach A: instead of transcribing, give WhisperX's second stage
     (wav2vec2 forced alignment) the text of a subtitle, the original or
-    ffsubsync's, near that subtitle's times. Returns the words with times,
-    like load_whisper_words, so every later step is Approach 0's, plus one
-    row per source line (FORCE_HEADER) for the snapshot 00_force_align.csv.
+    ffsubsync's, near that subtitle's times.
+
+    Returns the words with times, like load_whisper_words; for each word,
+    the position of the original's word it is (counting every original
+    word in order, as align_subtitles does); and one row per source line
+    (FORCE_HEADER) for the snapshot 00_force_align.csv. The second list
+    replaces align_words: every timed word is a word of the subtitle, so
+    there is nothing to match. Matching anyway lost that knowledge: on Dog
+    Man, global matching gave 16 dropped lines the words of a kept
+    neighbour with the same text ("Gooba gabba!" 18 s away), mistiming 25
+    lines in all. original: the subtitle
+    being retimed, when the source is another one (default: the source);
+    the source's lines are paired with it by text (_pair_words), and words
+    of unpaired lines are dropped.
 
     A forced aligner cannot say "this text is not here": in a window
     holding other speech it still returns times, and they are wrong
@@ -230,9 +268,19 @@ def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
     - out_of_order: it starts more than overlap_tol seconds before the
       previous kept line ends (windows overlap by their pads);
     - failed: the aligner gave its words no times.
+    - unpaired: no line of the original has its text.
     Approach 0's steps then place these lines like any line without words.
     """
     tokens = [tokenize(s.content) for s in source]
+    orig_tokens = tokens if original is None else [tokenize(s.content)
+                                                    for s in original]
+    first_word = [0]  # position of each original line's first word
+    for t in orig_tokens:
+        first_word.append(first_word[-1] + len(t))
+    if original is None:
+        pairs = {(i, k): (i, k) for i, t in enumerate(tokens) for k in range(len(t))}
+    else:
+        pairs = _pair_words(orig_tokens, tokens)
     times = [(s.start.total_seconds(), s.end.total_seconds()) for s in source]
     status = ["no_words" if not t else None for t in tokens]
     timed, scores = {}, {}
@@ -247,7 +295,7 @@ def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
             timed[i] = mine
             scores[i] = statistics.mean(w[2] if w else 0.0 for w in mine)
 
-    words, rows, prev_end = [], [], None
+    found, rows, prev_end = [], [], None  # found: (word, original position)
     for i, sub in enumerate(source):
         start = end = None
         if i in timed:
@@ -260,10 +308,15 @@ def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
                 status[i] = "low_score"
             elif prev_end is not None and start < prev_end - overlap_tol:
                 status[i] = "out_of_order"
+            elif not any((i, k) in pairs for k in range(len(mine))):
+                status[i] = "unpaired"
             else:
                 status[i] = "kept"
                 prev_end = end
-                words.extend(Word(t, w[0], w[1]) for t, w in zip(tokens[i], mine) if w)
+                for k, (t, w) in enumerate(zip(tokens[i], mine)):
+                    if w and (i, k) in pairs:
+                        a, ak = pairs[(i, k)]
+                        found.append((Word(t, w[0], w[1]), first_word[a] + ak))
         rows.append([sub.index, status[i],
                      f"{scores[i]:.3f}" if i in scores else "", len(tokens[i]),
                      f"{times[i][0]:.3f}",
@@ -271,8 +324,8 @@ def force_align_words(source, judge, max_len=15.0, split_gap=1.0, pad=0.5,
                      "" if end is None else f"{end:.3f}",
                      "" if start is None else f"{start - times[i][0]:+.3f}",
                      sub.content.replace("\n", " / ")])
-    words.sort(key=lambda w: w.start)  # stable: ties keep the text order
-    return words, rows
+    found.sort(key=lambda f: f[0].start)  # stable: ties keep the text order
+    return [w for w, _ in found], [o for _, o in found], rows
 
 
 # ---------------------------------------------------------------------------
@@ -960,9 +1013,11 @@ def cue_changes(step_name, results, before):
 
 def align_subtitles(original, new_words, judge=None, verbose=True,
                     snapshot_dir=None, settings=None, changes_path=None,
-                    approach="0"):
+                    approach="0", word_origin=None):
     """
     approach: "0" or "A", where new_words came from (for the summary only).
+    word_origin: for each of new_words, the position of the original word
+    it is (from force_align_words); then align_words is skipped.
     snapshot_dir: write the per-cue state after every step as
     NN_<step>.csv there (see write_snapshot), and align_words' input and
     output as 00_align_words.csv (see write_word_snapshot).
@@ -1000,10 +1055,14 @@ def align_subtitles(original, new_words, judge=None, verbose=True,
             orig_tokens.append(token)
             orig_owner.append(ci)
 
-    new_tokens = [w.text for w in new_words]
     trace = [] if snapshot_dir else None
-    mapping = align_words(orig_tokens, new_tokens, trace=trace,
-                          **kw("align_words"))
+    if word_origin is None:
+        new_tokens = [w.text for w in new_words]
+        mapping = align_words(orig_tokens, new_tokens, trace=trace,
+                              **kw("align_words"))
+    else:
+        # Approach A: each word already is a word of the original.
+        mapping = {oi: (j, j) for j, oi in enumerate(word_origin)}
     if snapshot_dir:
         # Word-level, before any line has a time; numbered 00 so the line
         # snapshots keep their numbers (snapshot() is not called).
@@ -1185,12 +1244,13 @@ def main():
         judge = AudioJudge(args.audio, device=args.device,
                            cache_path=args.audio_cache)
 
-    force_rows = None
+    force_rows = word_origin = None
     if args.force_align:
         with open(args.new, "r", encoding="utf-8-sig") as f:
             source_subs = list(srt.parse(f.read()))
-        new_words, force_rows = force_align_words(
-            source_subs, judge, **(settings or {}).get("force_align", {}))
+        new_words, word_origin, force_rows = force_align_words(
+            source_subs, judge, original=original,
+            **(settings or {}).get("force_align", {}))
         kept = sum(row[1] == "kept" for row in force_rows)
         source = (f"{Path(args.new)} (its own text, force-aligned: "
                   f"{kept}/{len(source_subs)} lines kept)")
@@ -1208,6 +1268,7 @@ def main():
                               verbose=not args.quiet,
                               snapshot_dir=args.snapshots, settings=settings,
                               changes_path=args.changes,
+                              word_origin=word_origin,
                               approach="A" if args.force_align else "0")
     if force_rows and args.snapshots:
         # After align_subtitles, which empties the folder first.
@@ -1246,7 +1307,7 @@ def main():
             / max(sum(r.words for r in results), 1), 2)
         if force_rows:
             # Lines of the --force-align source, by FORCE_HEADER status.
-            for s in ("kept", "low_score", "out_of_order", "failed", "no_words"):
+            for s in FORCE_STATUSES:
                 metrics[f"force_{s}"] = sum(row[1] == s for row in force_rows)
         Path(args.metrics).parent.mkdir(parents=True, exist_ok=True)
         with open(args.metrics, "w", encoding="utf-8") as f:
