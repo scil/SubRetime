@@ -22,18 +22,18 @@
 <line x1="392" y1="720" x2="392" y2="743" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="536" y1="720" x2="536" y2="743" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="680" y1="720" x2="680" y2="743" stroke="#4f5d75" stroke-width="2" marker-end="url(#flowchart-arrow)"/>
-<line x1="248" y1="632" x2="248" y2="811" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="104" y1="352" x2="104" y2="811" stroke="#4f5d75" stroke-width="3" marker-end="url(#flowchart-arrow-lg)"/>
+<line x1="248" y1="632" x2="248" y2="811" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="392" y1="772" x2="392" y2="811" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="104" y1="860" x2="104" y2="883" stroke="#4f5d75" stroke-width="3" marker-end="url(#flowchart-arrow-lg)"/>
 <line x1="248" y1="860" x2="248" y2="883" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="392" y1="860" x2="392" y2="883" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
+<line x1="104" y1="912" x2="104" y2="951" stroke="#4f5d75" stroke-width="3" marker-end="url(#flowchart-arrow-lg)"/>
+<line x1="248" y1="912" x2="248" y2="951" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
+<line x1="392" y1="912" x2="392" y2="951" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="536" y1="772" x2="536" y2="951" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <path d="M 456,836 H 512 A 8,8 0 0 1 520,844 V 951" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
-<line x1="392" y1="912" x2="392" y2="951" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="680" y1="772" x2="680" y2="951" stroke="#4f5d75" stroke-width="2" marker-end="url(#flowchart-arrow)"/>
-<line x1="248" y1="912" x2="248" y2="951" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
-<line x1="104" y1="912" x2="104" y2="951" stroke="#4f5d75" stroke-width="3" marker-end="url(#flowchart-arrow-lg)"/>
 <line x1="104" y1="1000" x2="104" y2="1023" stroke="#4f5d75" stroke-width="3" marker-end="url(#flowchart-arrow-lg)"/>
 <line x1="248" y1="1000" x2="248" y2="1023" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>
 <line x1="392" y1="1000" x2="392" y2="1023" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#flowchart-arrow)"/>

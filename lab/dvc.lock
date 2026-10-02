@@ -361,8 +361,8 @@ stages:
     deps:
     - path: flow_diagrams.py
       hash: md5
-      md5: 675f45971d62c38f81fca3ac4126e8b7
-      size: 24826
+      md5: 14462a1f536da3bcd6072e879e4c935c
+      size: 25041
     - path: out/dog-man-2025-sample-1092-1151/steps
       hash: md5
       md5: 817037d4e75b93a23f705c9307843ca2.dir
@@ -371,6 +371,6 @@ stages:
     outs:
     - path: out/dog-man-2025-sample-1092-1151/diagrams
       hash: md5
-      md5: 78271b1bf13a12bf32e3dca72f6b7229.dir
+      md5: 9050ea558ab1767d4365c1ffdc4f0499.dir
       size: 78956
       nfiles: 4

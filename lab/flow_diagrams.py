@@ -258,6 +258,11 @@ def flowchart(run, title, slug):
               f'<text x="{mid}" y="76" fill="{SOFT}" font-size="9" font-family="{MONO}" text-anchor="middle">words aligned (align_words)</text>']
     line_at = {"original": (mid, 88)}   # status -> (x, y where its line continues)
     jumps = {}                          # status -> [(x, y, n)] cues jumping in from a side
+    rank = {s: i for i, s in enumerate(["original"] + run.statuses)}
+
+    def ranked(statuses):   # sets iterate in a different order every run
+        return sorted(statuses, key=rank.get)
+
     y = 112
     last = len(run.steps) - 1
     for k, step in enumerate(run.steps):
@@ -276,7 +281,7 @@ def flowchart(run, title, slug):
         inside = [s for s in passing if x0 < cols[s] < x1]
         assert not inside, f"{step}: {inside} would pass behind the box; reorder ORDER"
         # lines into the box
-        for s in consumed:
+        for s in ranked(consumed):
             if s in line_at:
                 x, y0 = line_at[s]
                 arrow(x, y0, y, run.before[k][s] - sum(n for *_, n in jumps.get(s, [])),
@@ -288,7 +293,7 @@ def flowchart(run, title, slug):
                               f'fill="none" stroke="{MUTED}" stroke-width="{tier(n)}" marker-end="url(#{slug}-arrow)"/>')
                 count_label(tx, y - 16, f"{s} +{n}", side=-side)
         # pass-by labels: once per segment, beside the first box it passes
-        for s in passing:
+        for s in ranked(passing):
             if line_at[s][1] < y and (s, "labelled") not in line_at:
                 count_label(cols[s], y + box_h / 2, str(run.before[k][s]))
                 line_at[(s, "labelled")] = True
@@ -306,7 +311,7 @@ def flowchart(run, title, slug):
             line_at[a] = (cols[a], end)
             line_at.pop((a, "labelled"), None)
             bottom = max(bottom, end)
-        for a in jumping:
+        for a in ranked(jumping):
             n = sum(v for (b, t), v in flows.items() if t == a and b in consumed)
             side = 1 if cols[a] > x1 else -1
             edge = x1 if side > 0 else x0
