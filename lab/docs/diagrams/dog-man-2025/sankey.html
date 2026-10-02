@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dog Man (2025): status flow, one column per step</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Geist', system-ui, sans-serif; background: #f5f5f5; color: #2d3142;
+           min-height: 100vh; display: flex; justify-content: center; padding: 3rem 2rem; }
+    .frame { max-width: 1140px; width: 100%; min-width: 0; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+    .eyebrow { font-family: 'Geist Mono', monospace; font-size: .66rem; font-weight: 500;
+               letter-spacing: .18em; text-transform: uppercase; color: #4f5d75; margin-bottom: .5rem; }
+    h1 { font-family: 'Instrument Serif', serif; font-size: clamp(1.5rem, 2.4vw + .75rem, 2rem);
+         font-weight: 400; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 1.5rem; }
+    .note { margin-top: .5rem; font-size: .8rem; line-height: 1.6; color: #4f5d75; max-width: 960px; }
+    .note code { font-family: 'Geist Mono', monospace; font-size: .75rem; }
+    svg { width: 100%; min-width: 1140px; display: block; }
+    @media print { .diagram-container { overflow-x: visible; } svg { min-width: 0; } }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Sankey · align_srt.py</p>
+    <h1>Dog Man (2025): status flow, one column per step</h1>
+    <div class="diagram-container">
+      <svg viewBox="0 0 1140 1293" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="sankey-title sankey-desc">
+<title id="sankey-title">Dog Man (2025): status flow, one column per step</title>
+<desc id="sankey-desc">Sankey, one column per step: 1391 cues; band width is the number of cues moving between statuses; 108 become outlier at step 02, 86 end as outlier.</desc>
+<defs><marker id="sankey-arrow" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker><marker id="sankey-arrow-lg" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><polygon points="0 0, 10 4, 0 8" fill="#4f5d75"/></marker><marker id="sankey-arrow-accent" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker></defs>
+<rect width="100%" height="100%" fill="#f5f5f5"/>
+<text x="126" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">01 time_cues</text>
+<text x="126" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Match &amp; time</text>
+<text x="266" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">02 reject_outliers</text>
+<text x="266" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Reject outliers</text>
+<text x="406" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">03 interpolate_missing</text>
+<text x="406" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Interpolate</text>
+<text x="546" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">04 verify_with_audio</text>
+<text x="546" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Audio check</text>
+<text x="546" y="90" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.14em">OPTIONAL · --AUDIO</text>
+<text x="686" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">05 rescue_local</text>
+<text x="686" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Local rescue</text>
+<text x="826" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">06 revert_out_of_order</text>
+<text x="826" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Revert order</text>
+<text x="966" y="52" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">07 finalize_timing</text>
+<text x="966" y="72" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', sans-serif" text-anchor="middle">Finalize timing</text>
+<!-- 02: anchored -> anchored 1105 cues -->
+<path d="M132,136.00 C196.0,136.00 196.0,136.00 260,136.00 L260,644.41 C196.0,644.41 196.0,644.41 132,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 02: none -> none 178 cues -->
+<path d="M132,1099.49 C196.0,1099.49 196.0,1099.49 260,1099.49 L260,1181.39 C196.0,1181.39 196.0,1181.39 132,1181.39 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 03: anchored -> anchored 1105 cues -->
+<path d="M272,136.00 C336.0,136.00 336.0,136.00 400,136.00 L400,644.41 C336.0,644.41 336.0,644.41 272,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 04: anchored -> anchored 1105 cues -->
+<path d="M412,136.00 C476.0,136.00 476.0,136.00 540,136.00 L540,644.41 C476.0,644.41 476.0,644.41 412,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 04: interpolated -> interpolated 178 cues -->
+<path d="M412,965.60 C476.0,965.60 476.0,965.60 540,965.60 L540,1047.49 C476.0,1047.49 476.0,1047.49 412,1047.49 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 05: anchored -> anchored 1105 cues -->
+<path d="M552,136.00 C616.0,136.00 616.0,136.00 680,136.00 L680,644.41 C616.0,644.41 616.0,644.41 552,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 05: verified -> verified 9 cues -->
+<path d="M552,746.10 C616.0,746.10 616.0,746.10 680,746.10 L680,750.24 C616.0,750.24 616.0,750.24 552,750.24 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 05: interpolated -> interpolated 173 cues -->
+<path d="M552,967.90 C616.0,967.90 616.0,965.60 680,965.60 L680,1045.19 C616.0,1045.19 616.0,1047.49 552,1047.49 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 06: anchored -> anchored 1105 cues -->
+<path d="M692,136.00 C756.0,136.00 756.0,136.00 820,136.00 L820,644.41 C756.0,644.41 756.0,644.41 692,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 06: verified -> verified 6 cues -->
+<path d="M692,746.10 C756.0,746.10 756.0,746.10 820,746.10 L820,748.86 C756.0,748.86 756.0,748.86 692,748.86 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 06: rescued -> rescued 21 cues -->
+<path d="M692,802.24 C756.0,802.24 756.0,802.24 820,802.24 L820,811.91 C756.0,811.91 756.0,811.91 692,811.91 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 06: interpolated -> interpolated 173 cues -->
+<path d="M692,965.60 C756.0,965.60 756.0,965.60 820,965.60 L820,1045.19 C756.0,1045.19 756.0,1045.19 692,1045.19 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 07: anchored -> anchored 1105 cues -->
+<path d="M832,136.00 C896.0,136.00 896.0,136.00 960,136.00 L960,644.41 C896.0,644.41 896.0,644.41 832,644.41 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 07: verified -> verified 6 cues -->
+<path d="M832,746.10 C896.0,746.10 896.0,746.10 960,746.10 L960,748.86 C896.0,748.86 896.0,748.86 832,748.86 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 07: rescued -> rescued 21 cues -->
+<path d="M832,802.24 C896.0,802.24 896.0,802.24 960,802.24 L960,811.91 C896.0,811.91 896.0,811.91 832,811.91 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 07: interpolated -> interpolated 173 cues -->
+<path d="M832,965.60 C896.0,965.60 896.0,965.60 960,965.60 L960,1045.19 C896.0,1045.19 896.0,1045.19 832,1045.19 Z" fill="rgba(79,93,117,0.12)"/>
+<!-- 03: none -> interpolated 178 cues -->
+<path d="M272,1099.49 C336.0,1099.49 336.0,965.60 400,965.60 L400,1047.49 C336.0,1047.49 336.0,1181.39 272,1181.39 Z" fill="rgba(79,93,117,0.32)"/>
+<!-- 04: outlier -> verified 9 cues -->
+<path d="M412,863.91 C476.0,863.91 476.0,746.10 540,746.10 L540,750.24 C476.0,750.24 476.0,868.05 412,868.05 Z" fill="rgba(79,93,117,0.32)" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3"/>
+<!-- 05: outlier -> rescued 16 cues -->
+<path d="M552,863.91 C616.0,863.91 616.0,802.24 680,802.24 L680,809.60 C616.0,809.60 616.0,871.27 552,871.27 Z" fill="rgba(79,93,117,0.32)"/>
+<!-- 05: interpolated -> rescued 5 cues -->
+<path d="M552,965.60 C616.0,965.60 616.0,809.60 680,809.60 L680,811.91 C616.0,811.91 616.0,967.90 552,967.90 Z" fill="rgba(79,93,117,0.32)"/>
+<!-- 02: anchored -> outlier 108 cues -->
+<path d="M132,644.41 C196.0,644.41 196.0,863.91 260,863.91 L260,913.60 C196.0,913.60 196.0,694.10 132,694.10 Z" fill="rgba(235,108,54,0.42)"/>
+<!-- 03: outlier -> outlier 108 cues -->
+<path d="M272,863.91 C336.0,863.91 336.0,863.91 400,863.91 L400,913.60 C336.0,913.60 336.0,913.60 272,913.60 Z" fill="rgba(235,108,54,0.24)"/>
+<!-- 04: outlier -> outlier 99 cues -->
+<path d="M412,868.05 C476.0,868.05 476.0,863.91 540,863.91 L540,909.46 C476.0,909.46 476.0,913.60 412,913.60 Z" fill="rgba(235,108,54,0.24)"/>
+<!-- 05: outlier -> outlier 83 cues -->
+<path d="M552,871.27 C616.0,871.27 616.0,863.91 680,863.91 L680,902.09 C616.0,902.09 616.0,909.46 552,909.46 Z" fill="rgba(235,108,54,0.24)"/>
+<!-- 06: verified -> outlier 3 cues -->
+<path d="M692,748.86 C756.0,748.86 756.0,863.91 820,863.91 L820,865.29 C756.0,865.29 756.0,750.24 692,750.24 Z" fill="rgba(235,108,54,0.42)" stroke="rgba(235,108,54,0.42)" stroke-width="1"/>
+<!-- 06: outlier -> outlier 83 cues -->
+<path d="M692,863.91 C756.0,863.91 756.0,865.29 820,865.29 L820,903.47 C756.0,903.47 756.0,902.09 692,902.09 Z" fill="rgba(235,108,54,0.24)"/>
+<!-- 07: outlier -> outlier 86 cues -->
+<path d="M832,863.91 C896.0,863.91 896.0,863.91 960,863.91 L960,903.47 C896.0,903.47 896.0,903.47 832,903.47 Z" fill="rgba(235,108,54,0.24)"/>
+<rect x="120" y="136.00" width="12" height="558.10" fill="#2d3142"/>
+<text x="104" y="413.1" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="end">anchored</text>
+<text x="104" y="427.1" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="end">1213</text>
+<rect x="120" y="1099.49" width="12" height="81.90" fill="#2d3142"/>
+<text x="104" y="1138.4" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="end">none</text>
+<text x="104" y="1152.4" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="end">178</text>
+<rect x="260" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="266" y="116.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">anchored</text>
+<text x="266" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1105</text>
+<rect x="260" y="863.91" width="12" height="49.69" fill="#2d3142"/>
+<text x="266" y="843.9" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">outlier</text>
+<text x="266" y="857.9" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">108</text>
+<rect x="260" y="1099.49" width="12" height="81.90" fill="#2d3142"/>
+<text x="266" y="1093.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">178</text>
+<rect x="400" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="406" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1105</text>
+<rect x="400" y="863.91" width="12" height="49.69" fill="#2d3142"/>
+<text x="406" y="857.9" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">108</text>
+<text x="418" y="925.6" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace">108 re-timed</text>
+<rect x="400" y="965.60" width="12" height="81.90" fill="#2d3142"/>
+<text x="406" y="945.6" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">interpolated</text>
+<text x="406" y="959.6" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">178</text>
+<rect x="540" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="546" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1105</text>
+<rect x="540" y="746.10" width="12" height="4.14" fill="#2d3142"/>
+<text x="546" y="726.1" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">verified</text>
+<text x="546" y="740.1" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">9</text>
+<rect x="540" y="863.91" width="12" height="45.55" fill="#2d3142"/>
+<text x="546" y="843.9" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">outlier</text>
+<text x="546" y="857.9" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">99</text>
+<rect x="540" y="965.60" width="12" height="81.90" fill="#2d3142"/>
+<text x="546" y="959.6" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">178</text>
+<rect x="680" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="686" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1105</text>
+<rect x="680" y="746.10" width="12" height="4.14" fill="#2d3142"/>
+<text x="686" y="740.1" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">9</text>
+<rect x="680" y="802.24" width="12" height="9.66" fill="#2d3142"/>
+<text x="686" y="782.2" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">rescued</text>
+<text x="686" y="796.2" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">21</text>
+<rect x="680" y="863.91" width="12" height="38.19" fill="#2d3142"/>
+<text x="686" y="843.9" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">outlier</text>
+<text x="686" y="857.9" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">83</text>
+<rect x="680" y="965.60" width="12" height="79.60" fill="#2d3142"/>
+<text x="686" y="945.6" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">interpolated</text>
+<text x="686" y="959.6" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">173</text>
+<rect x="820" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="826" y="130.0" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">1105</text>
+<rect x="820" y="746.10" width="12" height="2.76" fill="#2d3142"/>
+<text x="826" y="726.1" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">verified</text>
+<text x="826" y="740.1" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">6</text>
+<rect x="820" y="802.24" width="12" height="9.66" fill="#2d3142"/>
+<text x="826" y="796.2" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">21</text>
+<rect x="820" y="863.91" width="12" height="39.57" fill="#2d3142"/>
+<text x="826" y="843.9" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">outlier</text>
+<text x="826" y="857.9" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">86</text>
+<rect x="820" y="965.60" width="12" height="79.60" fill="#2d3142"/>
+<text x="826" y="959.6" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">173</text>
+<rect x="960" y="136.00" width="12" height="508.41" fill="#2d3142"/>
+<text x="988" y="388.2" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">anchored</text>
+<text x="988" y="402.2" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">1105</text>
+<rect x="960" y="746.10" width="12" height="2.76" fill="#2d3142"/>
+<text x="988" y="745.5" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">verified</text>
+<text x="988" y="759.5" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">6</text>
+<rect x="960" y="802.24" width="12" height="9.66" fill="#2d3142"/>
+<text x="988" y="805.1" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">rescued</text>
+<text x="988" y="819.1" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">21</text>
+<rect x="960" y="863.91" width="12" height="39.57" fill="#2d3142"/>
+<text x="988" y="881.7" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">outlier</text>
+<text x="988" y="895.7" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">86</text>
+<rect x="960" y="965.60" width="12" height="79.60" fill="#2d3142"/>
+<text x="988" y="1003.4" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="start">interpolated</text>
+<text x="988" y="1017.4" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="start">173</text>
+<line x1="40" y1="1221" x2="1100" y2="1221" stroke="rgba(45,49,66,0.10)" stroke-width="0.8"/>
+<text x="40" y="1241" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.18em">LEGEND</text>
+<rect x="40" y="1261" width="16" height="8" rx="0" fill="rgba(79,93,117,0.12)" stroke="#4f5d75" stroke-width="1"/>
+<text x="70" y="1269" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">status unchanged</text>
+<rect x="209.2" y="1261" width="16" height="8" rx="0" fill="rgba(79,93,117,0.32)" stroke="#4f5d75" stroke-width="1"/>
+<text x="239.2" y="1269" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">status changed</text>
+<rect x="364.0" y="1261" width="16" height="8" rx="0" fill="rgba(235,108,54,0.32)" stroke="#eb6c36" stroke-width="1"/>
+<text x="394.0" y="1269" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">into outlier</text>
+<rect x="504.4" y="1259" width="6" height="12" rx="0" fill="#2d3142"/>
+<text x="534.4" y="1269" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', sans-serif">node: count after the step</text>
+</svg>
+    </div>
+    <p class="note">Counts from <code>out/dog-man-2025/steps</code> (1391 cues). A cue's status before and after each step is read from consecutive snapshots, so every column adds up to 1391. "re-timed": cues the step moved without changing their status.</p>
+  </div>
+</body>
+</html>

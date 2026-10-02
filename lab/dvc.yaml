@@ -59,6 +59,18 @@ stages:
             x: index
             y: shift_s
 
+  diagrams:
+    # Flowchart and Sankey of how the cues moved between statuses, step by
+    # step, computed from the snapshots (see flow_diagrams.py).
+    foreach: ${films}
+    do:
+      cmd: python flow_diagrams.py out/${key}
+      deps:
+        - flow_diagrams.py
+        - out/${key}/steps
+      outs:
+        - out/${key}/diagrams
+
   evaluate:
     foreach: ${films}
     do:
