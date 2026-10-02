@@ -60,8 +60,8 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 939c634e0f487636d858d93952999a2c
-      size: 41801
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
         [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4
       hash: md5
@@ -99,6 +99,12 @@ stages:
             min_score: 85
           revert_out_of_order:
             tolerance: 1.0
+          force_align:
+            max_len: 15.0
+            split_gap: 1.0
+            pad: 0.5
+            min_score: 0.5
+            min_score_short: 0.6
     outs:
     - path: out/dog-man-2025/0/align.json
       hash: md5
@@ -203,12 +209,12 @@ stages:
     deps:
     - path: ../align_srt.py
       hash: md5
-      md5: 939c634e0f487636d858d93952999a2c
-      size: 41801
+      md5: c267fbfbd584099915cf5d1e22fafcc5
+      size: 56006
     - path: ../evaluate_timing.py
       hash: md5
-      md5: 08ac26ee3bd293c431adf39cbb0d0250
-      size: 6607
+      md5: a03a2316b75b9099718a63f04dfb5eb6
+      size: 6666
     - path: films/dog-man-2025/ffsubsync.srt
       hash: md5
       md5: fe12b64abce718ba712a9fc8a10f28e6
@@ -625,3 +631,21 @@ stages:
       hash: md5
       md5: 7a218c8f37293c4bbce3985534df1960
       size: 659
+  diagrams_0@dog-man-2025:
+    cmd: python flow_diagrams.py out/dog-man-2025/0
+    deps:
+    - path: flow_diagrams.py
+      hash: md5
+      md5: 558e613f48be8ea29c8b19ed806521f8
+      size: 25373
+    - path: out/dog-man-2025/0/steps
+      hash: md5
+      md5: 6f9998df336629647be092b5f5ad2df7.dir
+      size: 1491609
+      nfiles: 8
+    outs:
+    - path: out/dog-man-2025/0/diagrams
+      hash: md5
+      md5: cc99078f686f58d1f7adecfc8f5e904f.dir
+      size: 83600
+      nfiles: 4
