@@ -1,5 +1,5 @@
 """
-Run align_srt.py on one film with the align stage's arguments (Approach
+Run align_srt.py on one film with the align_0 stage's arguments (Approach
 0) or the align_A stage's (Approach A, --force-align), for VS Code's
 debugger (.vscode/launch.json).
 
@@ -8,7 +8,7 @@ which also holds each film's inputs: subtitle, video and transcript.
 Asked in the terminal which one to debug, answer with its number, or `p`
 to open the pick_films window and select others (run them there with
 "Save and run dvc repro" if they have not run yet); then which approach.
-Outputs go to debug/<film>/ (Approach A: debug/<film>/A/, git-ignored),
+Outputs go to debug/<film>/0/ or debug/<film>/A/ (git-ignored),
 so DVC's outputs stay as DVC wrote them. The audio cache is the
 pipeline's, cache/<film>/: after one `dvc repro` of the film, the audio
 and the GPU model are not loaded.
@@ -90,13 +90,12 @@ def align_args(film, info, approach="0"):
     if not (LAB / cache).exists():
         print(f"note: {cache} not filled yet: the audio check loads the "
               f"video and the GPU model (run dvc repro on {film} to avoid it)")
+    out = f"debug/{film}/{approach}"
     if approach == "A":
         # As in the align_A stage: the original's own text and times.
-        out = f"debug/{film}/A"
         words = [info["original"]]
         extra = ["--force-align"]
     else:
-        out = f"debug/{film}"
         words = [info["whisper"]]
         extra = []
     return [info["original"], *words, f"{out}/fixed.srt", *extra,

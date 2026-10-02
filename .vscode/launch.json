@@ -2,12 +2,12 @@
   // Step through align_srt.py on a film selected in lab/pick_films.py.
   // lab/debug_film.py asks in the terminal which selected film to debug
   // (`p` opens the pick_films window to select others) and which approach
-  // (0: WhisperX transcript, A: --force-align), then passes the DVC align
-  // or align_A stage's arguments for it; the outputs go to
-  // lab/debug/<film>/ (Approach A: lab/debug/<film>/A/, git-ignored) so
-  // DVC's outputs stay as DVC wrote them. After one `dvc repro` of the
-  // film, every audio question is answered from its cache, so the video
-  // and the GPU model are never loaded.
+  // (0: WhisperX transcript, A: --force-align), then passes the DVC
+  // align_0 or align_A stage's arguments for it; the outputs go to
+  // lab/debug/<film>/0/ or lab/debug/<film>/A/ (git-ignored) so DVC's
+  // outputs stay as DVC wrote them. After one `dvc repro` of the film, every audio question is
+  // answered from its cache, so the video and the GPU model are never
+  // loaded.
   //
   // The first configuration (F5's default) also sets SUBRETIME_STOPS: the
   // run pauses inside the steps and on the lines that lab/stops.yaml lists

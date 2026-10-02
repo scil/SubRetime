@@ -21,7 +21,8 @@ not as decisions:
 
 For align_srt.py this is already built: [`lab/flow_diagrams.py`](../../../lab/flow_diagrams.py)
 reads one run's snapshots and writes the flowchart and the Sankey (HTML and
-SVG); the DVC stage `diagrams@<film>` runs it after every `align`. Change the
+SVG); the DVC stages `diagrams_0@<film>` and `diagrams_A@<film>` run it after
+every `align_0` / `align_A`. Change the
 drawing there. Rendered example:
 [`lab/docs/diagrams/dog-man-2025/`](../../../lab/docs/diagrams/dog-man-2025/).
 For another pipeline, start from a copy of it.

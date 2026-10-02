@@ -11,13 +11,15 @@ until it holds --anchors cues still anchored after reject_outliers in the
 full film (by default the larger of reject_outliers' `window` and
 interpolate_missing's `side` in params.yaml).
 
-The sample keeps the source's absolute times and cue numbers, so its step
-snapshots line up with the full film's (out/<film>/steps/) and the audio
-judge asks the same questions of the same video. Inputs:
+The cut follows Approach 0's run of the film (stage align_0): its WhisperX
+words and statuses. The sample keeps the source's absolute times and cue
+numbers, so its step snapshots line up with the full film's
+(out/<film>/0/steps/) and the audio judge asks the same questions of the
+same video. Inputs:
 
   films/<film>/original.srt, films/<film>/ffsubsync.srt  (the cut's cues)
   work/<film>/whisper/*.json  (the words the full film aligned to them)
-  out/<film>/steps/  (that alignment and the statuses: run align first)
+  out/<film>/0/steps/  (that alignment and the statuses: run align_0 first)
 
 Output: films/<film>-sample-<first>-<last>/ with original.srt,
 ffsubsync.srt and whisper/<same name>.json. Then the sample is aligned
@@ -145,7 +147,7 @@ def compare(film, info, cues, sample_dir, first, last):
     each step snapshot with the film's. Returns {step: [differing cues]}.
     The film's audio cache answers the questions the film already asked.
     """
-    steps = LAB / "out" / film / "steps"
+    steps = LAB / "out" / film / "0" / "steps"
     words, _ = align_srt.load_whisper_words(sample_dir / "whisper")
     judge = align_srt.AudioJudge(
         info["video"], cache_path=LAB / "cache" / film / "confidence.sqlite")
@@ -188,14 +190,14 @@ def main():
 
     with open(LAB / "films.yaml", encoding="utf-8") as f:
         info = yaml.safe_load(f)[args.film]
-    steps = LAB / "out" / args.film / "steps"
+    steps = LAB / "out" / args.film / "0" / "steps"
     if not (steps / "00_align_words.csv").exists():
-        raise SystemExit(f"out/{args.film}/steps missing: run the align stage "
-                         f"on {args.film} first")
+        raise SystemExit(f"out/{args.film}/0/steps missing: run the align_0 "
+                         f"stage on {args.film} first")
     found = sorted((LAB / "work" / args.film / "whisper").glob("*.json"))
     if len(found) != 1:
         raise SystemExit(f"work/{args.film}/whisper: expected one .json, "
-                         f"found {len(found)} (run the transcribe stage first)")
+                         f"found {len(found)} (run the transcribe_0 stage first)")
 
     sample = f"{args.film}-sample-{args.first}-{args.last}"
     out = LAB / "films" / sample

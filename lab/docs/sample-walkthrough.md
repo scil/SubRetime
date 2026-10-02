@@ -6,7 +6,7 @@ lines on each side, so its files hold cues 1076-1161: 86 lines, 276
 WhisperX words, 64:18-69:23. On the studied cues every step's snapshot
 matches the full film's (see "Sample films for debugging" in the README).
 
-This walkthrough follows Approach 0 (the `align` stage, `out/<film>/`).
+This walkthrough follows Approach 0 (the `align_0` stage, `out/<film>/0/`).
 With Approach A (`python debug_film.py <film> A`, outputs in `A/`) the
 lines take other paths: its words come from forced alignment, so the
 statuses below differ.
@@ -18,9 +18,9 @@ statuses below differ.
    debugger answers every audio question from the cache.
 2. In VS Code, Run and Debug → **align film (no stops)**, and answer the
    terminal's question with the number of
-   `dog-man-2025-sample-1092-1151`.
-   Outputs go to `lab/debug/dog-man-2025-sample-1092-1151/`.
-3. Keep `lab/out/dog-man-2025-sample-1092-1151/steps/` open next to the
+   `dog-man-2025-sample-1092-1151`, then `0` for the approach.
+   Outputs go to `lab/debug/dog-man-2025-sample-1092-1151/0/`.
+3. Keep `lab/out/dog-man-2025-sample-1092-1151/0/steps/` open next to the
    code: each `NN_<step>.csv` is what `results` looks like after that step.
 
 `results` is a list in cue order, so cue *N* is `results[N - 1076]`.

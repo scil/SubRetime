@@ -1,6 +1,6 @@
 schema: '2.0'
 stages:
-  transcribe@dog-man-2025:
+  transcribe_0@dog-man-2025:
     cmd: whisperx "F:/Dog Man (2025) [1080p] [WEBRip] [5.1] 
       [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --language en
       --model large-v3 --device cuda --compute_type float16 --output_format json
@@ -24,7 +24,7 @@ stages:
       md5: 7cb5749c42b1abcc032c49bb549b3277.dir
       size: 1050983
       nfiles: 1
-  transcribe@ann-droid-s01e01:
+  transcribe_0@ann-droid-s01e01:
     cmd: whisperx "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H
       264-RAWR[EZTVx.to].mkv" --language en --model large-v3 --device cuda 
       --compute_type float16 --output_format json --output_dir 
@@ -48,14 +48,14 @@ stages:
       md5: fd785aa686e423bce769ea07d061adbd.dir
       size: 468068
       nfiles: 1
-  align@dog-man-2025:
+  align_0@dog-man-2025:
     cmd: python ../align_srt.py "films/dog-man-2025/original.srt" 
-      work/dog-man-2025/whisper out/dog-man-2025/fixed.srt --audio "F:/Dog Man
+      work/dog-man-2025/whisper out/dog-man-2025/0/fixed.srt --audio "F:/Dog Man
       (2025) [1080p] [WEBRip] [5.1] 
       [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --quiet 
-      --report out/dog-man-2025/fixed.report.csv --snapshots 
-      out/dog-man-2025/steps --metrics out/dog-man-2025/align.json --params 
-      params.yaml --changes out/dog-man-2025/changes.csv --audio-cache 
+      --report out/dog-man-2025/0/fixed.report.csv --snapshots 
+      out/dog-man-2025/0/steps --metrics out/dog-man-2025/0/align.json --params 
+      params.yaml --changes out/dog-man-2025/0/changes.csv --audio-cache 
       cache/dog-man-2025/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -100,35 +100,35 @@ stages:
           revert_out_of_order:
             tolerance: 1.0
     outs:
-    - path: out/dog-man-2025/align.json
+    - path: out/dog-man-2025/0/align.json
       hash: md5
       md5: abefc4a4708d93aeb23829e498e6b461
       size: 168
-    - path: out/dog-man-2025/changes.csv
+    - path: out/dog-man-2025/0/changes.csv
       hash: md5
       md5: a16bfde02ed0be3837c4713dcfe1ca8a
       size: 342982
-    - path: out/dog-man-2025/fixed.report.csv
+    - path: out/dog-man-2025/0/fixed.report.csv
       hash: md5
       md5: cc9b791a938f5bcd736e88a268104bcc
       size: 151393
-    - path: out/dog-man-2025/fixed.srt
+    - path: out/dog-man-2025/0/fixed.srt
       hash: md5
       md5: c0500e82bdb2d1861aa27f5141a32674
       size: 92059
-    - path: out/dog-man-2025/steps
+    - path: out/dog-man-2025/0/steps
       hash: md5
       md5: 6f9998df336629647be092b5f5ad2df7.dir
       size: 1491609
       nfiles: 8
-  align@ann-droid-s01e01:
+  align_0@ann-droid-s01e01:
     cmd: python ../align_srt.py "films/ann-droid-s01e01/original.srt" 
-      work/ann-droid-s01e01/whisper out/ann-droid-s01e01/fixed.srt --audio 
+      work/ann-droid-s01e01/whisper out/ann-droid-s01e01/0/fixed.srt --audio 
       "F:/Videos/Ann Droid/Ann Droid S01E01 1080p iP WEB-DL AAC2 0 H 
       264-RAWR[EZTVx.to].mkv" --quiet --report 
-      out/ann-droid-s01e01/fixed.report.csv --snapshots 
-      out/ann-droid-s01e01/steps --metrics out/ann-droid-s01e01/align.json 
-      --params params.yaml --changes out/ann-droid-s01e01/changes.csv 
+      out/ann-droid-s01e01/0/fixed.report.csv --snapshots 
+      out/ann-droid-s01e01/0/steps --metrics out/ann-droid-s01e01/0/align.json 
+      --params params.yaml --changes out/ann-droid-s01e01/0/changes.csv 
       --audio-cache cache/ann-droid-s01e01/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -173,32 +173,32 @@ stages:
           revert_out_of_order:
             tolerance: 1.0
     outs:
-    - path: out/ann-droid-s01e01/align.json
+    - path: out/ann-droid-s01e01/0/align.json
       hash: md5
       md5: fdf2ae57b5d37e9c045e7a25febfd7c5
       size: 164
-    - path: out/ann-droid-s01e01/changes.csv
+    - path: out/ann-droid-s01e01/0/changes.csv
       hash: md5
       md5: ce0a6437c85506fe1b532f6d48d731f7
       size: 110897
-    - path: out/ann-droid-s01e01/fixed.report.csv
+    - path: out/ann-droid-s01e01/0/fixed.report.csv
       hash: md5
       md5: ade021e39a7cc7309bcbde2392dc9233
       size: 54047
-    - path: out/ann-droid-s01e01/fixed.srt
+    - path: out/ann-droid-s01e01/0/fixed.srt
       hash: md5
       md5: 4bdaabeff6c6896614d4637436a321fe
       size: 32794
-    - path: out/ann-droid-s01e01/steps
+    - path: out/ann-droid-s01e01/0/steps
       hash: md5
       md5: 8283f78dd09df00f06a6137c6fc2830c.dir
       size: 570599
       nfiles: 8
-  evaluate@dog-man-2025:
+  evaluate_0@dog-man-2025:
     cmd: python ../evaluate_timing.py "films/dog-man-2025/ffsubsync.srt" 
-      out/dog-man-2025/fixed.srt --audio "F:/Dog Man (2025) [1080p] [WEBRip] 
+      out/dog-man-2025/0/fixed.srt --audio "F:/Dog Man (2025) [1080p] [WEBRip] 
       [5.1] [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --json 
-      out/dog-man-2025/eval.json --audio-cache 
+      out/dog-man-2025/0/eval.json --audio-cache 
       cache/dog-man-2025/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -213,20 +213,20 @@ stages:
       hash: md5
       md5: fe12b64abce718ba712a9fc8a10f28e6
       size: 85094
-    - path: out/dog-man-2025/fixed.srt
+    - path: out/dog-man-2025/0/fixed.srt
       hash: md5
       md5: c0500e82bdb2d1861aa27f5141a32674
       size: 92059
     outs:
-    - path: out/dog-man-2025/eval.json
+    - path: out/dog-man-2025/0/eval.json
       hash: md5
       md5: bd3ca22f7d1012be240bff5c6e831b0c
       size: 660
-  evaluate@ann-droid-s01e01:
+  evaluate_0@ann-droid-s01e01:
     cmd: python ../evaluate_timing.py "films/ann-droid-s01e01/ffsubsync.srt" 
-      out/ann-droid-s01e01/fixed.srt --audio "F:/Videos/Ann Droid/Ann Droid 
+      out/ann-droid-s01e01/0/fixed.srt --audio "F:/Videos/Ann Droid/Ann Droid 
       S01E01 1080p iP WEB-DL AAC2 0 H 264-RAWR[EZTVx.to].mkv" --json 
-      out/ann-droid-s01e01/eval.json --audio-cache 
+      out/ann-droid-s01e01/0/eval.json --audio-cache 
       cache/ann-droid-s01e01/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -241,26 +241,26 @@ stages:
       hash: md5
       md5: 96192f86c16300a2d2352122bd7c11d0
       size: 30673
-    - path: out/ann-droid-s01e01/fixed.srt
+    - path: out/ann-droid-s01e01/0/fixed.srt
       hash: md5
       md5: 4bdaabeff6c6896614d4637436a321fe
       size: 32794
     outs:
-    - path: out/ann-droid-s01e01/eval.json
+    - path: out/ann-droid-s01e01/0/eval.json
       hash: md5
       md5: 7d37622b4991178ad1f7b9a9a40dacb5
       size: 658
-  align@dog-man-2025-sample-1092-1151:
+  align_0@dog-man-2025-sample-1092-1151:
     cmd: python ../align_srt.py 
       "films/dog-man-2025-sample-1092-1151/original.srt" 
       films/dog-man-2025-sample-1092-1151/whisper 
-      out/dog-man-2025-sample-1092-1151/fixed.srt --audio "F:/Dog Man (2025) 
+      out/dog-man-2025-sample-1092-1151/0/fixed.srt --audio "F:/Dog Man (2025) 
       [1080p] [WEBRip] [5.1] 
       [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --quiet 
-      --report out/dog-man-2025-sample-1092-1151/fixed.report.csv --snapshots 
-      out/dog-man-2025-sample-1092-1151/steps --metrics 
-      out/dog-man-2025-sample-1092-1151/align.json --params params.yaml 
-      --changes out/dog-man-2025-sample-1092-1151/changes.csv --audio-cache 
+      --report out/dog-man-2025-sample-1092-1151/0/fixed.report.csv --snapshots 
+      out/dog-man-2025-sample-1092-1151/0/steps --metrics 
+      out/dog-man-2025-sample-1092-1151/0/align.json --params params.yaml 
+      --changes out/dog-man-2025-sample-1092-1151/0/changes.csv --audio-cache 
       cache/dog-man-2025-sample-1092-1151/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -311,34 +311,34 @@ stages:
             min_score: 0.5
             min_score_short: 0.6
     outs:
-    - path: out/dog-man-2025-sample-1092-1151/align.json
+    - path: out/dog-man-2025-sample-1092-1151/0/align.json
       hash: md5
       md5: 3c69243b3de811d19c69f714210c255b
       size: 162
-    - path: out/dog-man-2025-sample-1092-1151/changes.csv
+    - path: out/dog-man-2025-sample-1092-1151/0/changes.csv
       hash: md5
       md5: 5dfc7081f86c219bff73fbbde2fa289c
       size: 24051
-    - path: out/dog-man-2025-sample-1092-1151/fixed.report.csv
+    - path: out/dog-man-2025-sample-1092-1151/0/fixed.report.csv
       hash: md5
       md5: 420f9e9fb2ba27884422ef918d6e46f1
       size: 9517
-    - path: out/dog-man-2025-sample-1092-1151/fixed.srt
+    - path: out/dog-man-2025-sample-1092-1151/0/fixed.srt
       hash: md5
       md5: c14a035554d04b95cc7c1c82e96dc76f
       size: 5478
-    - path: out/dog-man-2025-sample-1092-1151/steps
+    - path: out/dog-man-2025-sample-1092-1151/0/steps
       hash: md5
       md5: 817037d4e75b93a23f705c9307843ca2.dir
       size: 85960
       nfiles: 8
-  evaluate@dog-man-2025-sample-1092-1151:
+  evaluate_0@dog-man-2025-sample-1092-1151:
     cmd: python ../evaluate_timing.py 
       "films/dog-man-2025-sample-1092-1151/ffsubsync.srt" 
-      out/dog-man-2025-sample-1092-1151/fixed.srt --audio "F:/Dog Man (2025) 
+      out/dog-man-2025-sample-1092-1151/0/fixed.srt --audio "F:/Dog Man (2025) 
       [1080p] [WEBRip] [5.1] 
       [YTS.MX]/Dog.Man.2025.1080p.WEBRip.x264.AAC5.1-[YTS.MX].mp4" --json 
-      out/dog-man-2025-sample-1092-1151/eval.json --audio-cache 
+      out/dog-man-2025-sample-1092-1151/0/eval.json --audio-cache 
       cache/dog-man-2025-sample-1092-1151/confidence.sqlite
     deps:
     - path: ../align_srt.py
@@ -353,29 +353,29 @@ stages:
       hash: md5
       md5: bedefa54e5ec32ae13264d6ab7c191e4
       size: 5108
-    - path: out/dog-man-2025-sample-1092-1151/fixed.srt
+    - path: out/dog-man-2025-sample-1092-1151/0/fixed.srt
       hash: md5
       md5: c14a035554d04b95cc7c1c82e96dc76f
       size: 5478
     outs:
-    - path: out/dog-man-2025-sample-1092-1151/eval.json
+    - path: out/dog-man-2025-sample-1092-1151/0/eval.json
       hash: md5
       md5: 33a04de3c37b4245dff26bb2052772c0
       size: 653
-  diagrams@dog-man-2025-sample-1092-1151:
-    cmd: python flow_diagrams.py out/dog-man-2025-sample-1092-1151
+  diagrams_0@dog-man-2025-sample-1092-1151:
+    cmd: python flow_diagrams.py out/dog-man-2025-sample-1092-1151/0
     deps:
     - path: flow_diagrams.py
       hash: md5
       md5: 558e613f48be8ea29c8b19ed806521f8
       size: 25373
-    - path: out/dog-man-2025-sample-1092-1151/steps
+    - path: out/dog-man-2025-sample-1092-1151/0/steps
       hash: md5
       md5: 817037d4e75b93a23f705c9307843ca2.dir
       size: 85960
       nfiles: 8
     outs:
-    - path: out/dog-man-2025-sample-1092-1151/diagrams
+    - path: out/dog-man-2025-sample-1092-1151/0/diagrams
       hash: md5
       md5: c7e434111cf398b45f2a98b20e4ca109.dir
       size: 79064

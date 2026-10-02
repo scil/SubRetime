@@ -1,10 +1,11 @@
 """
 Draw how one run's cues flow between statuses, step by step, from the
-snapshots align_srt.py writes with --snapshots (out/<film>/steps/NN_<step>.csv).
+snapshots align_srt.py writes with --snapshots
+(out/<film>/<approach>/steps/NN_<step>.csv, <approach> 0 or A).
 
-    python flow_diagrams.py out/<film> [--out DIR] [--title TEXT]
+    python flow_diagrams.py out/<film>/<approach> [--out DIR] [--title TEXT]
 
-Writes four files to DIR (default: out/<film>/diagrams):
+Writes four files to DIR (default: out/<film>/<approach>/diagrams):
   flowchart.html / .svg   one column per status; a step box spans the statuses
                           it processes, the others pass straight by
   sankey.html / .svg      one column per step; band width = number of cues
@@ -435,15 +436,17 @@ def sankey(run, title, slug):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("run_dir", help="out/<film>, holding steps/NN_<step>.csv")
+    ap.add_argument("run_dir", help="out/<film>/<approach>, holding steps/NN_<step>.csv")
     ap.add_argument("--out", help="output directory (default: <run_dir>/diagrams)")
-    ap.add_argument("--title", help="film name for the titles (default: the folder name)")
+    ap.add_argument("--title", help="film name for the titles (default: "
+                                    "'<film> (Approach <approach>)' from the folders)")
     args = ap.parse_args()
     run_dir = Path(args.run_dir)
     run = Run(run_dir / "steps")
     out = Path(args.out) if args.out else run_dir / "diagrams"
     out.mkdir(parents=True, exist_ok=True)
-    film = args.title or run_dir.name
+    film = args.title or (f"{run_dir.resolve().parent.name} (Approach {run_dir.name})"
+                          if run_dir.name in ("0", "A") else run_dir.name)
     today = datetime.date.today().isoformat()
     for (b, a), n in [(k, v) for c in run.flows for k, v in c.items()]:
         assert a in run.statuses or a == "original"

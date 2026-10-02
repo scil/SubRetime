@@ -177,8 +177,11 @@ summary when it finishes.
 
 ### DVC
 
-Run the whole chain (transcribe → align → evaluate) on the test films and
-compare runs. This needs the one-time setup in
+Run both approaches (Approach 0: transcribe_0 → align_0 → evaluate_0;
+Approach A: align_A → evaluate_A) on the test films and compare runs.
+Every stage name ends in `_0` or `_A`, and every output is under
+`out/<film>/0/` or `out/<film>/A/` (written `out/<film>/<approach>/`
+below). This needs the one-time setup in
 [Development workflow (DVC)](#development-workflow-dvc). Activate `.venv`
 first: the stages call `python` and `whisperx` from `PATH`, and a system
 Python without the dependencies fails with `No module named 'srt'`.
@@ -194,9 +197,9 @@ All commands run inside `lab/`.
 | Goal | Command |
 |---|---|
 | Run what changed | `dvc repro` |
-| Run one approach only | `dvc repro evaluate` (Approach 0) or `dvc repro evaluate_A` (A) |
+| Run one approach only | `dvc repro evaluate_0` or `dvc repro evaluate_A` (also runs the stages they depend on) |
 | Choose the films that run | `python pick_films.py` (window) or `python pick_films.py <film id> ...` |
-| Run one selected film only, once | `dvc repro evaluate@ann-droid-s01e01` (also runs the stages it depends on) |
+| Run one selected film only, once | `dvc repro evaluate_0@ann-droid-s01e01` (also runs the stages it depends on) |
 | Current metrics | `dvc metrics show` |
 | Metrics vs the last commit | `dvc metrics diff` |
 | Record a code change as a named experiment | `dvc exp run -n reject-1.2s` |
@@ -204,12 +207,12 @@ All commands run inside `lab/`.
 | Compare all experiments | `dvc exp show`, or the **Experiments** table in VS Code |
 | Keep an experiment's code and results | `dvc exp apply <name>`, then commit |
 | Charts: shift of every line after each step | `dvc plots show` (writes `dvc_plots/index.html`), or **Plots** in VS Code |
-| Where the lines went, step by step | open `out/<film>/diagrams/sankey.html` or `flowchart.html` |
-| What one step changed | filter `out/<film>/changes.csv` by `step`, e.g. `05_rescue_local` |
+| Where the lines went, step by step | open `out/<film>/<approach>/diagrams/sankey.html` or `flowchart.html` |
+| What one step changed | filter `out/<film>/<approach>/changes.csv` by `step`, e.g. `05_rescue_local` |
 
 After a `dvc repro` that failed partway, DVC may not have written the
 `.gitignore` entries for the stages that did finish, and `git status` then
-lists outputs such as `out/<film>/fixed.srt`. Run `dvc commit -f` to write
+lists outputs such as `out/<film>/0/fixed.srt`. Run `dvc commit -f` to write
 them before committing; otherwise run outputs end up in git.
 
 `dvc exp run` takes a copy of the uncommitted code with each run, so trying a
@@ -345,7 +348,7 @@ alignment (`force_align_words`, snapshot `00_force_align.csv`); Approach
 | 06 | Revert lines that break the subtitle order, then re-interpolate | `revert_out_of_order` | check |
 | 07 | No overlaps, minimum reading time, small start adjustments | `finalize_timing` | finishing |
 
-Steps 01–07 are numbered like the snapshot files (`out/<film>/steps/NN_<step>.csv`).
+Steps 01–07 are numbered like the snapshot files (`out/<film>/<approach>/steps/NN_<step>.csv`).
 Step 0 writes `00_align_words.csv`, which is per word rather than per line
 (see [Development workflow](#development-workflow-dvc)). Step 06 exists because steps 02–05 edit times
 line by line and can undo the ordering that step 0 guarantees.
@@ -353,22 +356,24 @@ line by line and can undo the ordering that step 0 guarantees.
 Each step handles only some statuses and lets the others pass by. The
 flowchart shows which step each status goes through (one column per
 status); the Sankey shows how many lines take each path, one column per
-step. Both use the *Dog Man* run (1391 lines, `--audio`); open an image for
-full size. `lab/flow_diagrams.py` computes them from a run's snapshots, and
-the DVC stage `diagrams@<film>` redraws them after every `align`
-(`out/<film>/diagrams/`). The copies below are refreshed by hand:
+step. Both use the *Dog Man* run of Approach 0 (1391 lines, `--audio`);
+open an image for full size. `lab/flow_diagrams.py` computes them from a
+run's snapshots, and the DVC stages `diagrams_0@<film>` and
+`diagrams_A@<film>` redraw them after every `align_0` / `align_A`
+(`out/<film>/<approach>/diagrams/`). The copies below are refreshed by
+hand:
 
 ```powershell
 cd lab
-python flow_diagrams.py out/dog-man-2025 --out docs/diagrams/dog-man-2025 --title "Dog Man (2025)"
+python flow_diagrams.py out/dog-man-2025/0 --out docs/diagrams/dog-man-2025/0 --title "Dog Man (2025), Approach 0"
 ```
 
 <p align="center">
-  <img src="lab/docs/diagrams/dog-man-2025/flowchart.svg" width="928" alt="Status flowchart: each status connects straight to the step that processes it and passes by the others; 1391 lines end as anchored 1105, verified 6, rescued 21, outlier 86, interpolated 173">
+  <img src="lab/docs/diagrams/dog-man-2025/0/flowchart.svg" width="928" alt="Status flowchart: each status connects straight to the step that processes it and passes by the others; 1391 lines end as anchored 1105, verified 6, rescued 21, outlier 86, interpolated 173">
 </p>
 
 <p align="center">
-  <img src="lab/docs/diagrams/dog-man-2025/sankey.svg" width="1140" alt="Sankey diagram, one column per step: 108 lines demoted to outlier at step 02; 9 verified at 04, 16 rescued at 05, 3 reverted at 06, 86 end as outlier">
+  <img src="lab/docs/diagrams/dog-man-2025/0/sankey.svg" width="1140" alt="Sankey diagram, one column per step: 108 lines demoted to outlier at step 02; 9 verified at 04, 16 rescued at 05, 3 reverted at 06, 86 end as outlier">
 </p>
 
 ### Key constants
@@ -500,20 +505,20 @@ These steps assume the normal [Installation](#installation) above is done
    python pick_films.py dog-man-2025
    ```
 
-   Each selected film gets its own stages: `transcribe@<film id>`,
-   `align@<film id>`, `diagrams@<film id>` and `evaluate@<film id>`
+   Each selected film gets its own stages: `transcribe_0@<film id>`,
+   `align_0@<film id>`, `diagrams_0@<film id>` and `evaluate_0@<film id>`
    (Approach 0), and `align_A@<film id>`, `diagrams_A@<film id>` and
    `evaluate_A@<film id>` (Approach A, which needs no transcript).
 
 7. Optional: reuse an existing WhisperX transcript instead of spending
-   about 10 minutes per film on the transcribe stage. Copy its `.json` into
+   about 10 minutes per film on the transcribe_0 stage. Copy its `.json` into
    `lab\work\<film id>\whisper\` and record it as that stage's output:
 
    ```powershell
    cd lab
    New-Item -ItemType Directory -Force work\dog-man-2025\whisper
    Copy-Item -LiteralPath "F:\Videos\whisper-output\movie.json" -Destination work\dog-man-2025\whisper\
-   dvc commit -f transcribe@dog-man-2025
+   dvc commit -f transcribe_0@dog-man-2025
    ```
 
 8. Run the pipeline:
@@ -523,8 +528,8 @@ These steps assume the normal [Installation](#installation) above is done
    dvc repro
    ```
 
-   The first run of the align and evaluate stages takes a few minutes per
-   film: both load the audio and the alignment model.
+   The first run of the align and evaluate stages (`_0` and `_A`) takes a
+   few minutes per film: they load the audio and the alignment model.
 
 DVC has already been initialized and committed (`.dvc/`, `.dvcignore` at
 the repository root), so a fresh clone needs only the steps above. No DVC
@@ -535,7 +540,7 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 
 | File | Purpose |
 |---|---|
-| `dvc.yaml` | stages `transcribe`, `align`, `diagrams`, `evaluate` (Approach 0) and `align_A`, `diagrams_A`, `evaluate_A` (Approach A), repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
+| `dvc.yaml` | stages `transcribe_0`, `align_0`, `diagrams_0`, `evaluate_0` (Approach 0) and `align_A`, `diagrams_A`, `evaluate_A` (Approach A), repeated per film (`foreach`): commands, inputs, outputs, metrics, plots |
 | `films.yaml` | every test film: video, subtitle, baseline (edited by hand, or appended by `pick_films.py`'s **Choose video…**) |
 | `selection.yaml` | the films that run, copied from `films.yaml` by `pick_films.py` (generated; committed) |
 | `pick_films.py` | choose the films to run, in a window or on the command line |
@@ -547,18 +552,19 @@ cache (`.dvc\cache`) and are rebuilt by `dvc repro` elsewhere.
 | `films/<film>/original.srt`, `ffsubsync.srt` | the test subtitles (committed) |
 | `films/<sample>/whisper/` | a sample's WhisperX `.json`, cut from its film's (committed) |
 | `work/<film>/whisper/` | WhisperX `.json` (git-ignored, stored in DVC's cache) |
-| `out/<film>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
-| `out/<film>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
-| `out/<film>/steps/00_align_words.csv` | **word snapshot**: input and output of `align_words`, one row per word (below) |
-| `out/<film>/changes.csv` | every line each step changed, before → after |
-| `out/<film>/A/` | Approach A: the same files as `out/<film>/` (`fixed.srt`, report, `steps/`, `changes.csv`, `diagrams/`, `align.json`, `eval.json`), plus `steps/00_force_align.csv`: each line's confidence and whether its words were kept; `align.json` adds `force_<status>` counts |
+| `out/<film>/0/`, `out/<film>/A/` | one folder per approach (`<approach>` below), holding the same files |
+| `out/<film>/<approach>/fixed.srt`, `fixed.report.csv` | the retimed subtitle and its report |
+| `out/<film>/<approach>/steps/NN_<step>.csv` | **snapshot**: the per-line state after each step of `align_subtitles()` |
+| `out/<film>/<approach>/steps/00_align_words.csv` | **word snapshot**: input and output of `align_words`, one row per word (below) |
+| `out/<film>/A/steps/00_force_align.csv` | Approach A only: each line's confidence and whether its words were kept |
+| `out/<film>/<approach>/changes.csv` | every line each step changed, before → after |
+| `out/<film>/<approach>/align.json` | metrics: lines per status, share of subtitle words matched; Approach A adds `force_<status>` counts (committed) |
+| `out/<film>/<approach>/eval.json` | metrics: `evaluate_timing.py` results, the same keys for both approaches (committed) |
+| `out/<film>/<approach>/diagrams/` | output of `flow_diagrams.py` for that run (stages `diagrams_0`, `diagrams_A`) |
 | `cache/<film>/confidence.sqlite` | audio judge scores and Approach A's forced alignments, reused across runs (git-ignored, not a DVC output) |
-| `debug/<film>/` | outputs of the VS Code debug configuration (git-ignored) |
-| `out/<film>/align.json` | metrics: lines per status, share of subtitle words matched (committed) |
-| `out/<film>/eval.json` | metrics: `evaluate_timing.py` results (committed) |
-| `flow_diagrams.py` | draws `out/<film>/diagrams/`: flowchart and Sankey of the run's status flow, from its snapshots (HTML and SVG) |
-| `out/<film>/diagrams/` | output of `flow_diagrams.py` for that run (stage `diagrams`) |
-| `docs/diagrams/` | committed diagrams used by README.md: a copy of one run's `diagrams/`, plus hand-drawn state machine, swimlane and heatmap |
+| `debug/<film>/<approach>/` | outputs of the VS Code debug configuration (git-ignored) |
+| `flow_diagrams.py` | draws `out/<film>/<approach>/diagrams/`: flowchart and Sankey of the run's status flow, from its snapshots (HTML and SVG) |
+| `docs/diagrams/` | committed diagrams used by README.md: a copy of one run's `diagrams/` (`dog-man-2025/0/`), plus hand-drawn state machine, swimlane and heatmap |
 
 Outputs other than the metrics files are git-ignored. DVC keeps them in its
 cache, one copy per run.
@@ -574,7 +580,7 @@ work outside DVC:
 | `--params FILE` | nothing: reads tuning constants (next section) |
 | `--audio-cache FILE` | an SQLite cache of the audio judge's scores (below); `evaluate_timing.py` has the same option |
 
-**Audio cache.** Almost all of the align stage's time is audio work: on
+**Audio cache.** Almost all of the align_0 stage's time is audio work: on
 Dog Man, loading the audio took 8.9 s, the alignment model 4.0 s and the
 178 audio-judge calls 8.4 s, while every other step together took about
 0.1 s. With `--audio-cache`, each judge answer is stored under its video
@@ -608,7 +614,7 @@ other keyword argument of the steps listed in `TUNABLE` (in `align_srt.py`)
 can be added the same way; a misspelled step or keyword stops the run
 before any audio is loaded.
 
-Because the `align` stages list `align` under `params`, DVC reruns them when
+Because the `align_0` and `align_A` stages list `align` under `params`, DVC reruns them when
 a value changes, and each value is a column in `dvc exp show` and the VS
 Code Experiments table. Try a value without editing the file:
 
@@ -626,8 +632,9 @@ DVC runs every film in `lab/selection.yaml`. That file is generated from
 `films.yaml` by `pick_films.py`, because DVC's templates cannot pick entries
 by a parameter (`films[<param>]` is not supported). `dvc.yaml` loads it
 through `vars` and repeats its stages for each film with `foreach`. It
-holds two lists: `films` (align and evaluate run over it) and `transcribe`,
-the films among them without a `whisper` transcript of their own.
+holds two lists: `films` (every stage but `transcribe_0` runs over it) and
+`transcribe`, the films among them without a `whisper` transcript of their
+own (`transcribe_0` runs over it).
 
 ```powershell
 cd lab
@@ -659,10 +666,10 @@ unchanged since its last run; otherwise it reruns on the next `dvc repro`.
 To choose what you *look at* in VS Code, among the films that ran:
 
 - **Plots**: run **DVC: Select Plots to Display** from the Command Palette
-  (Ctrl+Shift+P). It lists one entry per `out/<film>/steps/<step>.csv`;
-  tick the films and steps to show.
+  (Ctrl+Shift+P). It lists one entry per `out/<film>/<approach>/steps/<step>.csv`;
+  tick the films, approaches and steps to show.
 - **Experiments** table: the metric columns are grouped by file,
-  `out/<film>/align.json` and `out/<film>/eval.json`. Run **DVC: Select
+  `out/<film>/<approach>/align.json` and `eval.json`. Run **DVC: Select
   Columns to Display in the Experiments Table** and untick the other films.
 
 To add a step, write the function, call it in `align_subtitles()`, and add
@@ -738,9 +745,9 @@ yet). Saving closes the window (a run, once it ends with exit code 0;
 a failed run leaves it open to read), and the list is asked again.
 Closing the window by hand does the same without saving. A film without a transcript yet is marked
 and cannot be chosen for Approach 0 until it has run. `debug_film.py` then
-passes the `align` stage's arguments for the film (from `selection.yaml`),
-or `align_A`'s for Approach A, writes to `lab/debug/<film>/` (Approach A:
-`lab/debug/<film>/A/`; git-ignored), and uses the pipeline's audio cache,
+passes the `align_0` or `align_A` stage's arguments for the film (from
+`selection.yaml`), writes to `lab/debug/<film>/0/` or
+`lab/debug/<film>/A/` (git-ignored), and uses the pipeline's audio cache,
 so after one `dvc repro` of the film the video and the GPU are never
 loaded. `python lab/debug_film.py <film>` (Approach 0) or
 `python lab/debug_film.py <film> A` skips the questions.

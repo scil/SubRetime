@@ -42,13 +42,15 @@ Save selection
   and the ones debug_film.py offers to debug.
 
 Save and run dvc repro
-  Saves, then runs the pipeline on the ticked films (transcribe -> align ->
-  evaluate) and shows its output here. Stages whose inputs and code have
-  not changed are skipped. It produces what debugging needs:
-    - the WhisperX transcript (without it a film cannot be debugged)
+  Saves, then runs the pipeline on the ticked films (Approach 0:
+  transcribe_0 -> align_0 -> evaluate_0; Approach A: align_A -> evaluate_A)
+  and shows its output here. Stages whose inputs and code have not changed
+  are skipped. It produces what debugging needs:
+    - the WhisperX transcript (without it Approach 0 cannot be debugged)
     - the audio cache, cache/<film>/ (without it the debugger loads the
       video and the GPU model)
-    - the step snapshots, out/<film>/steps/, to compare with while debugging
+    - the step snapshots, out/<film>/0/steps/ and out/<film>/A/steps/, to
+      compare with while debugging
   Wait for "exit code" before closing the window.
 
 Opened from the debugger (debug_film.py, answer p): Save selection, or a
@@ -110,7 +112,7 @@ def write_selection(ids):
     # Keep catalog order so selection.yaml diffs stay stable. A film without
     # its own `whisper` transcript (a sample cut by make_sample.py has one)
     # is transcribed into work/<film>/whisper: it goes into `transcribe`,
-    # the list the transcribe stage runs over.
+    # the list the transcribe_0 stage runs over.
     films, transcribe = {}, {}
     for film, info in catalog.items():
         if film not in ids:
